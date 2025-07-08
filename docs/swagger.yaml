@@ -1,0 +1,122 @@
+basePath: /
+definitions:
+  handlers.ServiceHealth:
+    properties:
+      details:
+        additionalProperties:
+          type: string
+        type: object
+      service:
+        type: string
+      status:
+        type: string
+      timestamp:
+        type: string
+    type: object
+  handlers.ServiceStatus:
+    properties:
+      message:
+        type: string
+      service:
+        type: string
+      status:
+        type: string
+      timestamp:
+        type: string
+      version:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: info@bixor.io
+  description: High-performance trading backend API for cryptocurrency exchange operations
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  title: Bixor Trading Engine API
+  version: 1.0.0
+paths:
+  /:
+    get:
+      consumes:
+      - application/json
+      description: Get basic information about the Bixor Trading Engine
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Landing page message
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Landing page
+      tags:
+      - General
+  /api/v1/health:
+    get:
+      consumes:
+      - application/json
+      description: Check the health status of all services including API and database
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: All services are healthy
+          schema:
+            items:
+              $ref: '#/definitions/handlers.ServiceHealth'
+            type: array
+        "503":
+          description: One or more services are unhealthy
+          schema:
+            items:
+              $ref: '#/definitions/handlers.ServiceHealth'
+            type: array
+      summary: Health check for all services
+      tags:
+      - Monitoring
+  /api/v1/info:
+    get:
+      consumes:
+      - application/json
+      description: Get detailed information about all available services and endpoints
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: API information with services and endpoints
+          schema:
+            additionalProperties: true
+            type: object
+      summary: API information
+      tags:
+      - General
+  /api/v1/status:
+    get:
+      consumes:
+      - application/json
+      description: Get the current operational status of all services
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: All services are active
+          schema:
+            items:
+              $ref: '#/definitions/handlers.ServiceStatus'
+            type: array
+        "503":
+          description: One or more services are inactive
+          schema:
+            items:
+              $ref: '#/definitions/handlers.ServiceStatus'
+            type: array
+      summary: Get status of all services
+      tags:
+      - Monitoring
+schemes:
+- http
+- https
+swagger: "2.0"

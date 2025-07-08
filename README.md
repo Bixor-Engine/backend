@@ -1,11 +1,10 @@
 # Bixor Trading Engine
 
-A high-performance trading backend built with Go and Rust microservices.
+A high-performance trading backend built with Go.
 
 ## Architecture
 
-- **Go Service**: REST API, WebSocket handlers, business logic
-- **Rust Service**: High-performance order matching, risk calculations
+- **Go Service**: REST API, WebSocket handlers, business logic, order matching, risk calculations
 - **PostgreSQL**: Primary database for persistent data
 
 ## Getting Started
@@ -22,9 +21,8 @@ A high-performance trading backend built with Go and Rust microservices.
 # Start all services
 docker-compose up -d
 
-# Health checks
+# Health check
 curl http://localhost:8080/health  # Go service
-curl http://localhost:8081/health  # Rust service
 ```
 
 ## Services
@@ -34,12 +32,9 @@ curl http://localhost:8081/health  # Rust service
 - WebSocket connections
 - User management
 - Portfolio tracking
-
-### Rust Service (Port 8081)  
 - Order matching engine
 - Risk calculations
 - Market data processing
-- Performance-critical operations
 
 ### Database
 - PostgreSQL on port 5432
