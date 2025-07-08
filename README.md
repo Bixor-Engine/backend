@@ -1,187 +1,217 @@
 # Bixor Trading Engine
 
-A high-performance trading backend built with Go.
+A high-performance cryptocurrency trading backend built with Go and PostgreSQL.
 
-## Architecture
+## Project Status
 
-- **Go Service**: REST API, WebSocket handlers, business logic, order matching, risk calculations
-- **PostgreSQL**: Primary database for persistent data
+**Current State**: Early development phase with basic authentication system implemented.
 
-## Getting Started
+This project is actively under development. The authentication system is functional, but most trading-specific features are not yet implemented.
 
-### Prerequisites
-- Go 1.21+
-- PostgreSQL 15+
-- Docker & Docker Compose (optional)
+## Prerequisites
 
-### Quick Start
+- Go 1.21 or higher
+- PostgreSQL 15 or higher
+- Git
 
-#### Using Docker Compose
+## Quick Start
+
+### 1. Database Setup
+
+Start PostgreSQL (example with Docker):
 ```bash
-# Start all services
-docker-compose up -d
-
-# Health check
-curl http://localhost:8080/api/v1/health
+docker run --name bixor-postgres \
+  -e POSTGRES_USER=bixor \
+  -e POSTGRES_PASSWORD=password \
+  -e POSTGRES_DB=bixor \
+  -p 5432:5432 \
+  -d postgres:15
 ```
 
-#### Manual Setup
+### 2. Environment Configuration
+
+Create a `.env` file in the project root:
 ```bash
-# 1. Install the CLI tool
+cp .env.example .env
+```
+
+Edit `.env` with your database credentials:
+```env
+DATABASE_URL=postgres://bixor:password@localhost:5432/bixor?sslmode=disable
+PORT=8080
+API_VERSION=1.0.0
+JWT_SECRET=your_secure_jwt_secret_key_here
+JWT_EXPIRES_HOURS=24
+```
+
+### 3. Install and Setup
+
+```bash
+# Install CLI tool
 go install ./cmd/bixor
 
-# 2. Setup database (make sure PostgreSQL is running)
+# Setup database (creates tables and initial data)
 bixor database setup
 
-# 3. Start the API service
+# Start the API server
 bixor server start
 ```
 
-## CLI Tool
+The API server will be available at `http://localhost:8080`
 
-The project includes a professional CLI tool built with Cobra for managing all aspects of the Bixor Engine:
+## Available Features
 
-### Installation
-```bash
-# Install globally
-go install ./cmd/bixor
+### Authentication API
+- **POST /api/v1/auth/register** - User registration
+- **POST /api/v1/auth/login** - User login with JWT tokens
+- **POST /api/v1/auth/refresh** - JWT token refresh
 
-# Verify installation
-bixor --version
-```
+### System Monitoring
+- **GET /api/v1/health** - Health check for API and database
+- **GET /api/v1/status** - Service status information
+- **GET /api/v1/info** - API information and available endpoints
 
-### Database Management
-
-| Command | Description |
-|---------|-------------|
-| `bixor database setup` | Complete first-time database setup (create + migrate + seed) |
-| `bixor database migrate` | Run pending database migrations |
-| `bixor database seed` | Populate database with sample data |
-| `bixor database reset` | Drop all tables and rebuild (destructive) |
-| `bixor database status` | Show migration status and database info |
-
-### Server Management
-
-| Command | Description |
-|---------|-------------|
-| `bixor server start` | Start the API server |
-
-### Examples
-```bash
-# First-time setup
-bixor database setup
-
-# Run new migrations
-bixor database migrate
-
-# Check database status
-bixor database status
-
-# Start the server
-bixor server start
-
-# Reset database (WARNING: destroys all data)
-bixor database reset
-```
-
-For detailed CLI documentation, see [CLI README](cmd/bixor/README.md).
-
-## API Documentation
-
-### Interactive Documentation
+### API Documentation
 - **Swagger UI**: http://localhost:8080/swagger/index.html
 - **Quick Access**: http://localhost:8080/docs
 
-### API Endpoints
+## Database Schema
 
-#### General
-- `GET /` - Landing page
-- `GET /api/v1/info` - API information and service details
+Currently implemented tables:
 
-#### Monitoring
-- `GET /api/v1/health` - Health check for all services
-- `GET /api/v1/status` - Status check for all services
+### Users Table
+Complete user management with the following fields:
+- User identification (id, username, email)
+- Personal information (first_name, last_name, phone_number, address)
+- Authentication (password with Argon2i hashing)
+- Account status (role, status, kyc_status)
+- Security features (twofa_enabled, last_login tracking)
+- Referral system support
+- Localization (language, timezone)
 
-## Services
+**Note**: Trading-specific tables (orders, trades, markets, wallets) are not yet implemented.
 
-### Go Service (Port 8080)
-- REST API endpoints
-- WebSocket connections
-- User management
-- Portfolio tracking
-- Order matching engine
-- Risk calculations
-- Market data processing
+## CLI Tool
 
-### Database
-- PostgreSQL on port 5432
-- Contains user data, orders, trades, market data
-- Managed via migrations and seeders
+The `bixor` CLI tool provides database and server management:
 
-## Development
+```bash
+# Database operations
+bixor database setup    # Initial database setup
+bixor database migrate  # Run pending migrations
+bixor database status   # Check migration status
+bixor database seed     # Populate with sample data
+bixor database reset    # Reset database (destructive)
 
-### Project Structure
+# Server operations
+bixor server start      # Start the API server
+```
+
+## Development Tools
+
+Interactive testing tools are available in the `tools/` directory:
+
+```bash
+# Authentication testing tool
+go run tools/auth/main.go
+
+# Password hashing tool
+go run tools/hash/main.go
+```
+
+See `tools/README.md` for detailed usage instructions.
+
+## Project Structure
+
 ```
 bixor-engine/
 ├── cmd/
-│   ├── bixor/           # CLI tool for database and server management
-│   └── server/          # Main API server entry point
+│   ├── bixor/           # CLI tool for management
+│   └── server/          # Main API server
 ├── internal/
-│   ├── handlers/        # HTTP handlers
-│   ├── models/          # Database models
+│   ├── handlers/        # HTTP request handlers
+│   ├── models/          # Data models and business logic
 │   └── routes/          # Route definitions
 ├── database/
 │   ├── migrations/      # Database schema migrations
-│   ├── seeders/         # Database seed data
-│   └── init.sql         # Basic database initialization
-├── docs/                # Auto-generated API documentation
-└── configs/             # Configuration files
+│   └── seeders/         # Sample data for development
+├── tools/               # Development and testing tools
+└── docs/                # Auto-generated API documentation
 ```
 
-### Adding New Database Changes
+## Security Features
 
-1. Create a new migration file:
-```sql
--- database/migrations/007_add_new_table.sql
-CREATE TABLE new_table (...);
-INSERT INTO schema_migrations (version, description, checksum) 
-VALUES ('007', 'Add new table', 'migration_007_checksum');
-```
+- **Password Hashing**: Argon2i with secure parameters
+- **JWT Authentication**: Access and refresh token system
+- **Input Validation**: Request validation with detailed error messages
+- **Database Constraints**: Enforced data integrity at database level
 
-2. Run the migration:
+## Testing
+
 ```bash
-bixor database migrate
+# Test API endpoints
+curl http://localhost:8080/api/v1/health
+
+# Interactive testing via Swagger UI
+# Visit: http://localhost:8080/swagger/index.html
 ```
 
-### Environment Variables
+## Planned Features
 
-Create a `.env` file in the project root:
-```env
-# Database Configuration
-DATABASE_URL=postgres://username:password@localhost:5432/bixor?sslmode=disable
+The following features are planned but not yet implemented:
 
-# Go Service Configuration
-PORT=8080
-API_VERSION=1.0.0
-```
+### Core Trading Infrastructure
+- WebSocket connections for real-time data
+- Order management system
+- Trade execution engine
+- Market data feeds
+- Portfolio and wallet management
+
+### Advanced Features
+- Risk management system
+- Margin trading support
+- Advanced order types
+- Performance optimization
+- Comprehensive monitoring
 
 ## API Testing
 
-### Using curl
+Example authentication flow:
+
 ```bash
-# Health check
-curl http://localhost:8080/api/v1/health
+# Register a new user
+curl -X POST http://localhost:8080/api/v1/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "testuser",
+    "email": "test@example.com",
+    "password": "securepassword123",
+    "first_name": "Test",
+    "last_name": "User"
+  }'
 
-# Service status
-curl http://localhost:8080/api/v1/status
-
-# API information
-curl http://localhost:8080/api/v1/info
+# Login
+curl -X POST http://localhost:8080/api/v1/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "test@example.com",
+    "password": "securepassword123"
+  }'
 ```
 
-### Using the Interactive Documentation
-Visit http://localhost:8080/swagger/index.html to test endpoints directly in your browser.
+## Contributing
+
+This project is in active development. Contributions are welcome, particularly in the following areas:
+
+1. WebSocket implementation for real-time features
+2. Trading infrastructure (orders, trades, markets)
+3. Performance optimization
+4. Documentation improvements
 
 ## License
 
-MIT License - Build your exchange freely, safely, and securely. 
+MIT License
+
+## Support
+
+For questions or issues, please check the documentation or create an issue in the project repository. 

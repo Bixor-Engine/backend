@@ -26,16 +26,73 @@ type DatabaseInfo struct {
 	Environment   string    `json:"environment" db:"environment"`
 }
 
-// User represents a system user
+// User represents a complete system user matching the database schema
 type User struct {
-	ID           uuid.UUID `json:"id" db:"id"`
-	Email        string    `json:"email" db:"email"`
-	Username     string    `json:"username" db:"username"`
-	PasswordHash string    `json:"-" db:"password_hash"` // Never expose password hash in JSON
-	CreatedAt    time.Time `json:"created_at" db:"created_at"`
-	UpdatedAt    time.Time `json:"updated_at" db:"updated_at"`
-	IsActive     bool      `json:"is_active" db:"is_active"`
-	Version      int       `json:"version" db:"version"`
+	ID           uuid.UUID  `json:"id" db:"id"`
+	FirstName    string     `json:"first_name" db:"first_name"`
+	LastName     string     `json:"last_name" db:"last_name"`
+	Username     string     `json:"username" db:"username"`
+	Email        string     `json:"email" db:"email"`
+	Password     string     `json:"-" db:"password"` // Never expose password hash in JSON
+	EmailStatus  bool       `json:"email_status" db:"email_status"`
+	PhoneNumber  *string    `json:"phone_number,omitempty" db:"phone_number"`
+	PhoneStatus  bool       `json:"phone_status" db:"phone_status"`
+	ReferredBy   *uuid.UUID `json:"referred_by,omitempty" db:"referred_by"`
+	Address      *string    `json:"address,omitempty" db:"address"`
+	City         *string    `json:"city,omitempty" db:"city"`
+	Country      *string    `json:"country,omitempty" db:"country"`
+	Role         string     `json:"role" db:"role"`
+	Status       string     `json:"status" db:"status"`
+	KYCStatus    string     `json:"kyc_status" db:"kyc_status"`
+	TwoFAEnabled bool       `json:"twofa_enabled" db:"twofa_enabled"`
+	LastLoginAt  *time.Time `json:"last_login_at,omitempty" db:"last_login_at"`
+	LastLoginIP  *string    `json:"last_login_ip,omitempty" db:"last_login_ip"`
+	DeviceInfo   *string    `json:"device_info,omitempty" db:"device_info"` // JSONB as string
+	Language     string     `json:"language" db:"language"`
+	Timezone     string     `json:"timezone" db:"timezone"`
+	CreatedAt    time.Time  `json:"created_at" db:"created_at"`
+	UpdatedAt    time.Time  `json:"updated_at" db:"updated_at"`
+	DeletedAt    *time.Time `json:"deleted_at,omitempty" db:"deleted_at"`
+}
+
+// RegisterRequest represents the request payload for user registration
+type RegisterRequest struct {
+	FirstName   string  `json:"first_name" binding:"required,min=2,max=50"`
+	LastName    string  `json:"last_name" binding:"required,min=2,max=50"`
+	Username    string  `json:"username" binding:"required,min=3,max=30,alphanum"`
+	Email       string  `json:"email" binding:"required,email"`
+	Password    string  `json:"password" binding:"required,min=8,max=128"`
+	PhoneNumber *string `json:"phone_number,omitempty"`
+	ReferredBy  *string `json:"referred_by,omitempty"` // UUID as string in request
+	Address     *string `json:"address,omitempty"`
+	City        *string `json:"city,omitempty"`
+	Country     *string `json:"country,omitempty"`
+	Language    *string `json:"language,omitempty"`
+	Timezone    *string `json:"timezone,omitempty"`
+}
+
+// UserResponse represents the response payload for user data (excluding sensitive fields)
+type UserResponse struct {
+	ID           uuid.UUID  `json:"id"`
+	FirstName    string     `json:"first_name"`
+	LastName     string     `json:"last_name"`
+	Username     string     `json:"username"`
+	Email        string     `json:"email"`
+	EmailStatus  bool       `json:"email_status"`
+	PhoneNumber  *string    `json:"phone_number,omitempty"`
+	PhoneStatus  bool       `json:"phone_status"`
+	Address      *string    `json:"address,omitempty"`
+	City         *string    `json:"city,omitempty"`
+	Country      *string    `json:"country,omitempty"`
+	Role         string     `json:"role"`
+	Status       string     `json:"status"`
+	KYCStatus    string     `json:"kyc_status"`
+	TwoFAEnabled bool       `json:"twofa_enabled"`
+	LastLoginAt  *time.Time `json:"last_login_at,omitempty"`
+	Language     string     `json:"language"`
+	Timezone     string     `json:"timezone"`
+	CreatedAt    time.Time  `json:"created_at"`
+	UpdatedAt    time.Time  `json:"updated_at"`
 }
 
 // SystemHealth tracks system health metrics
@@ -62,4 +119,22 @@ type Market struct {
 	QuantityPrecision int       `json:"quantity_precision" db:"quantity_precision"`
 	CreatedAt         time.Time `json:"created_at" db:"created_at"`
 	UpdatedAt         time.Time `json:"updated_at" db:"updated_at"`
+}
+
+// LoginRequest represents the request payload for user login
+type LoginRequest struct {
+	Email    string `json:"email" binding:"required,email"`
+	Password string `json:"password" binding:"required,min=1"`
+}
+
+// LoginResponse represents the response payload for successful login
+type LoginResponse struct {
+	Message string       `json:"message"`
+	User    UserResponse `json:"user"`
+	Tokens  JWTTokens    `json:"tokens"`
+}
+
+// RefreshTokenRequest represents the request payload for token refresh
+type RefreshTokenRequest struct {
+	RefreshToken string `json:"refresh_token" binding:"required"`
 }

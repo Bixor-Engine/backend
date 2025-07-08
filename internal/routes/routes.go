@@ -16,6 +16,7 @@ func SetupRoutes(db *sql.DB) *gin.Engine {
 	// Initialize handlers
 	apiHandler := handlers.NewAPIHandler()
 	healthHandler := handlers.NewHealthHandler(db)
+	authHandler := handlers.NewAuthHandler(db)
 
 	// CORS middleware
 	router.Use(func(c *gin.Context) {
@@ -49,6 +50,17 @@ func SetupRoutes(db *sql.DB) *gin.Engine {
 		v1.GET("/health", healthHandler.HealthCheck)
 		v1.GET("/status", healthHandler.GetStatus)
 		v1.GET("/info", apiHandler.APIInfo)
+
+		// Authentication endpoints
+		auth := v1.Group("/auth")
+		{
+			auth.POST("/register", authHandler.Register)
+			auth.POST("/login", authHandler.Login)
+			auth.POST("/refresh", authHandler.RefreshToken)
+			// Future auth endpoints will be added here
+			// auth.POST("/logout", authHandler.Logout)
+			// auth.POST("/forgot-password", authHandler.ForgotPassword)
+		}
 
 		// Future routes will be added here
 		// v1.GET("/users", userHandler.GetUsers)
