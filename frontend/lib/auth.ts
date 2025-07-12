@@ -144,4 +144,8 @@ export class AuthService {
       return null;
     }
   }
+
+  static logout(): void {
+    this.clearAuth();
+  }
 }

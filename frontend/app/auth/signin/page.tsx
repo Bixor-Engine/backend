@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { AuthService } from '../../lib/auth';
+import { AuthService } from '@/lib/auth';
+import { toast } from "sonner";
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -12,21 +13,11 @@ import { Loader2, Eye, EyeOff, Lock, Mail } from 'lucide-react';
 
 export default function SignIn() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-
-  useEffect(() => {
-    // Check for success message from registration
-    const message = searchParams.get('message');
-    if (message) {
-      setSuccess(message);
-    }
-  }, [searchParams]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -39,8 +30,14 @@ export default function SignIn() {
       // Store authentication data
       AuthService.setAuth(response.token, response.user);
       
-      // Redirect to home
-      router.push('/');
+      // Show success toast
+      toast.success("Welcome back!", {
+        description: `Signed in as ${response.user.username}`,
+        duration: 4000
+      });
+      
+      // Redirect to wallets
+      router.push('/wallets');
     } catch (err: unknown) {
       if (err instanceof Error) {
         setError(err.message);
@@ -76,12 +73,6 @@ export default function SignIn() {
           </CardHeader>
           
           <CardContent className="space-y-4">
-            {success && (
-              <div className="p-3 rounded-md bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800">
-                <p className="text-sm text-green-700 dark:text-green-400">{success}</p>
-              </div>
-            )}
-
             {error && (
               <div className="p-3 rounded-md bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800">
                 <p className="text-sm text-red-700 dark:text-red-400">{error}</p>

@@ -3,7 +3,8 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { AuthService, RegisterRequest } from '../../lib/auth';
+import { AuthService, RegisterRequest } from '@/lib/auth';
+import { toast } from "sonner";
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -44,8 +45,14 @@ export default function SignUp() {
 
       await AuthService.register(registerData);
       
-      // Redirect to sign in with success message
-      router.push('/auth/signin?message=Registration successful! Please sign in.');
+      // Show success toast
+      toast.success("Account created successfully!", {
+        description: "You can now sign in with your credentials.",
+        duration: 6000
+      });
+      
+      // Redirect to sign in
+      router.push('/auth/signin');
     } catch (err: unknown) {
       if (err instanceof Error) {
         setError(err.message);
@@ -58,186 +65,207 @@ export default function SignUp() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="text-center">
-          <Link href="/" className="text-2xl font-bold text-gray-900 hover:text-blue-600 transition-colors">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background/50 to-secondary/20 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+      <div className="sm:mx-auto sm:w-full sm:max-w-lg">
+        <div className="text-center mb-8">
+          <Link 
+            href="/" 
+            className="text-3xl font-bold bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent hover:from-primary/80 hover:to-primary transition-all duration-300"
+          >
             Bixor Engine
           </Link>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Join our platform and get started today
+          </p>
         </div>
-        <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
-          Create your account
-        </h2>
-        <p className="mt-2 text-center text-sm text-gray-600">
-          Or{' '}
-          <Link
-            href="/auth/signin"
-            className="font-medium text-blue-600 hover:text-blue-500 transition-colors"
-          >
-            sign in to your existing account
-          </Link>
-        </p>
-      </div>
 
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white py-8 px-4 shadow-lg sm:rounded-lg sm:px-10">
-          <form className="space-y-6" onSubmit={handleSubmit}>
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-              <div>
-                <label htmlFor="first_name" className="block text-sm font-medium text-gray-700">
-                  First Name *
-                </label>
-                <div className="mt-1">
-                  <input
-                    id="first_name"
-                    name="first_name"
-                    type="text"
-                    autoComplete="given-name"
-                    required
-                    value={form.first_name}
-                    onChange={(e) => setForm(f => ({ ...f, first_name: e.target.value }))}
-                    className="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500 sm:text-sm"
-                    placeholder="Enter your first name"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label htmlFor="last_name" className="block text-sm font-medium text-gray-700">
-                  Last Name *
-                </label>
-                <div className="mt-1">
-                  <input
-                    id="last_name"
-                    name="last_name"
-                    type="text"
-                    autoComplete="family-name"
-                    required
-                    value={form.last_name}
-                    onChange={(e) => setForm(f => ({ ...f, last_name: e.target.value }))}
-                    className="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500 sm:text-sm"
-                    placeholder="Enter your last name"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div>
-              <label htmlFor="username" className="block text-sm font-medium text-gray-700">
-                Username *
-              </label>
-              <div className="mt-1">
-                <input
-                  id="username"
-                  name="username"
-                  type="text"
-                  autoComplete="username"
-                  required
-                  value={form.username}
-                  onChange={(e) => setForm(f => ({ ...f, username: e.target.value }))}
-                  className="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500 sm:text-sm"
-                  placeholder="Enter your username (3-30 characters, alphanumeric)"
-                />
-              </div>
-              <div className="mt-1">
-                <p className="text-xs text-gray-500">
-                  Username must be 3-30 characters long and contain only letters and numbers.
-                </p>
-              </div>
-            </div>
-
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                Email address *
-              </label>
-              <div className="mt-1">
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  autoComplete="email"
-                  required
-                  value={form.email}
-                  onChange={(e) => setForm(f => ({ ...f, email: e.target.value }))}
-                  className="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500 sm:text-sm"
-                  placeholder="Enter your email"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                Password *
-              </label>
-              <div className="mt-1">
-                <input
-                  id="password"
-                  name="password"
-                  type="password"
-                  autoComplete="new-password"
-                  required
-                  value={form.password}
-                  onChange={(e) => setForm(f => ({ ...f, password: e.target.value }))}
-                  className="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500 sm:text-sm"
-                  placeholder="Enter your password"
-                />
-              </div>
-              <div className="mt-1">
-                <p className="text-xs text-gray-500">
-                  Password must be at least 8 characters long.
-                </p>
-              </div>
-            </div>
-
+        <Card className="shadow-2xl border-0 bg-card/50 backdrop-blur-sm">
+          <CardHeader className="space-y-1 pb-4">
+            <CardTitle className="text-2xl font-bold text-center flex items-center justify-center gap-2">
+              <UserPlus className="h-6 w-6" />
+              Create Account
+            </CardTitle>
+            <CardDescription className="text-center">
+              Fill in your information to get started
+            </CardDescription>
+          </CardHeader>
+          
+          <CardContent className="space-y-4">
             {error && (
-              <div className="rounded-md bg-red-50 p-4">
-                <div className="text-sm text-red-700">{error}</div>
+              <div className="p-3 rounded-md bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800">
+                <p className="text-sm text-red-700 dark:text-red-400">{error}</p>
               </div>
             )}
 
-            <div>
-              <button
-                type="submit"
-                disabled={loading}
-                className="flex w-full justify-center rounded-md border border-transparent bg-blue-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                {loading ? (
-                  <div className="flex items-center">
-                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Creating account...
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="first_name" className="text-sm font-medium">
+                    First Name *
+                  </Label>
+                  <div className="relative">
+                    <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="first_name"
+                      name="first_name"
+                      type="text"
+                      autoComplete="given-name"
+                      required
+                      value={form.first_name}
+                      onChange={(e) => setForm(f => ({ ...f, first_name: e.target.value }))}
+                      className="pl-10 h-11"
+                      placeholder="First name"
+                    />
                   </div>
-                ) : (
-                  'Create account'
-                )}
-              </button>
-            </div>
-          </form>            <div className="mt-6">
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-gray-300" />
                 </div>
-                <div className="relative flex justify-center text-sm">
-                  <span className="bg-white px-2 text-gray-500">Additional profile information can be added later</span>
+
+                <div className="space-y-2">
+                  <Label htmlFor="last_name" className="text-sm font-medium">
+                    Last Name *
+                  </Label>
+                  <div className="relative">
+                    <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="last_name"
+                      name="last_name"
+                      type="text"
+                      autoComplete="family-name"
+                      required
+                      value={form.last_name}
+                      onChange={(e) => setForm(f => ({ ...f, last_name: e.target.value }))}
+                      className="pl-10 h-11"
+                      placeholder="Last name"
+                    />
+                  </div>
                 </div>
               </div>
-              
-              <div className="mt-4 text-center">
-                <p className="text-xs text-gray-600">
-                  By signing up, you agree to our{' '}
-                  <a href="#" className="font-medium text-blue-600 hover:text-blue-500 transition-colors">
-                    Terms of Service
-                  </a>
-                  {' and '}
-                  <a href="#" className="font-medium text-blue-600 hover:text-blue-500 transition-colors">
-                    Privacy Policy
-                  </a>
+
+              <div className="space-y-2">
+                <Label htmlFor="username" className="text-sm font-medium">
+                  Username *
+                </Label>
+                <div className="relative">
+                  <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="username"
+                    name="username"
+                    type="text"
+                    autoComplete="username"
+                    required
+                    value={form.username}
+                    onChange={(e) => setForm(f => ({ ...f, username: e.target.value }))}
+                    className="pl-10 h-11"
+                    placeholder="Choose a username"
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  3-30 characters, letters and numbers only
                 </p>
               </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="email" className="text-sm font-medium">
+                  Email address *
+                </Label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="email"
+                    name="email"
+                    type="email"
+                    autoComplete="email"
+                    required
+                    value={form.email}
+                    onChange={(e) => setForm(f => ({ ...f, email: e.target.value }))}
+                    className="pl-10 h-11"
+                    placeholder="Enter your email"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="password" className="text-sm font-medium">
+                  Password *
+                </Label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="password"
+                    name="password"
+                    type={showPassword ? "text" : "password"}
+                    autoComplete="new-password"
+                    required
+                    value={form.password}
+                    onChange={(e) => setForm(f => ({ ...f, password: e.target.value }))}
+                    className="pl-10 pr-10 h-11"
+                    placeholder="Create a strong password"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-3 h-4 w-4 text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Minimum 8 characters required
+                </p>
+              </div>
+
+              <Button
+                type="submit"
+                disabled={loading}
+                className="w-full h-11 bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary text-primary-foreground font-medium transition-all duration-300"
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Creating account...
+                  </>
+                ) : (
+                  <>
+                    <UserPlus className="mr-2 h-4 w-4" />
+                    Create account
+                  </>
+                )}
+              </Button>
+            </form>
+
+            <div className="relative my-6">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t border-border" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-card px-2 text-muted-foreground">Already have an account?</span>
+              </div>
             </div>
-        </div>
+
+            <div className="text-center">
+              <Link href="/auth/signin">
+                <Button variant="outline" className="w-full h-11 font-medium">
+                  Sign in instead
+                </Button>
+              </Link>
+            </div>
+
+            <div className="mt-4 text-center">
+              <p className="text-xs text-muted-foreground">
+                By creating an account, you agree to our{' '}
+                <Link href="#" className="font-medium text-primary hover:text-primary/80 transition-colors">
+                  Terms of Service
+                </Link>
+                {' and '}
+                <Link href="#" className="font-medium text-primary hover:text-primary/80 transition-colors">
+                  Privacy Policy
+                </Link>
+              </p>
+              <p className="text-xs text-muted-foreground mt-2">
+                Additional profile information can be added later in settings
+              </p>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

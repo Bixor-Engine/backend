@@ -1,140 +1,402 @@
 'use client';
 
-import Link from "next/link";
-import { useState, useEffect } from "react";
-import Navbar from "./components/Navbar";
-import { AuthService, User } from "./lib/auth";
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { AuthService } from '@/lib/auth';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
+import { 
+  ArrowRight,
+  Shield,
+  Zap,
+  Globe,
+  Wallet,
+  TrendingUp,
+  Users,
+  Github,
+  Twitter,
+  Linkedin,
+  Menu,
+  X
+} from 'lucide-react';
 
-export default function Home() {
+export default function HomePage() {
+  const router = useRouter();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const checkAuth = () => {
       setIsAuthenticated(AuthService.isAuthenticated());
-      setUser(AuthService.getUser());
+      setLoading(false);
     };
-
     checkAuth();
-    
-    // Listen for storage changes (when user logs in/out in another tab)
-    const handleStorageChange = () => {
-      checkAuth();
-    };
-
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
+  const handleGetStarted = () => {
+    if (isAuthenticated) {
+      router.push('/wallets');
+    } else {
+      router.push('/auth/signup');
+    }
+  };
+
+  const features = [
+    {
+      icon: Shield,
+      title: "Enterprise Security",
+      description: "Advanced encryption and multi-layer security protocols to protect your digital assets."
+    },
+    {
+      icon: Zap,
+      title: "Lightning Fast",
+      description: "Optimized performance with real-time processing and instant transaction confirmations."
+    },
+    {
+      icon: Globe,
+      title: "Global Access",
+      description: "Access your wallets and manage assets from anywhere in the world, 24/7."
+    },
+    {
+      icon: Wallet,
+      title: "Multi-Asset Support",
+      description: "Support for various cryptocurrencies and digital assets in one unified platform."
+    },
+    {
+      icon: TrendingUp,
+      title: "Advanced Analytics",
+      description: "Comprehensive portfolio tracking with detailed analytics and performance insights."
+    },
+    {
+      icon: Users,
+      title: "Team Collaboration",
+      description: "Collaborate with team members and manage shared wallets with role-based permissions."
+    }
+  ];
+
+  const stats = [
+    { label: "Active Users", value: "50K+" },
+    { label: "Transactions", value: "1M+" },
+    { label: "Assets Supported", value: "100+" },
+    { label: "Countries", value: "180+" }
+  ];
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background/50 to-secondary/20">
       {/* Navigation */}
-      <Navbar />
-
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="text-center">
-          <h1 className="text-4xl font-bold text-gray-900 sm:text-6xl">
-            Welcome to{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">
-              Bixor Engine
-            </span>
-          </h1>
-          <p className="mt-6 text-lg leading-8 text-gray-600 max-w-2xl mx-auto">
-            A powerful and modern web application platform built with Go backend and Next.js frontend.
-            Experience seamless authentication, robust APIs, and beautiful user interfaces.
-          </p>
-          
-          {!isAuthenticated && (
-            <div className="mt-10 flex items-center justify-center gap-x-6">
-              <Link
-                href="/auth/signup"
-                className="rounded-md bg-blue-600 px-6 py-3 text-lg font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 transition-colors"
+      <nav className="relative z-50 bg-background/80 backdrop-blur-md border-b border-border/50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <div className="flex items-center">
+              <Link 
+                href="/" 
+                className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent hover:from-primary/80 hover:to-primary transition-all duration-300"
               >
-                Get started
-              </Link>
-              <Link
-                href="/auth/signin"
-                className="text-lg font-semibold leading-6 text-gray-900 hover:text-blue-600 transition-colors"
-              >
-                Sign in <span aria-hidden="true">→</span>
+                Bixor Engine
               </Link>
             </div>
-          )}
 
-          {isAuthenticated && (
-            <div className="mt-10">
-              <div className="bg-white rounded-lg shadow-md p-8 max-w-md mx-auto">
-                <h2 className="text-2xl font-bold text-gray-900 mb-4">Dashboard</h2>
-                <p className="text-gray-600 mb-6">Welcome back! You are successfully authenticated.</p>
-                <div className="space-y-3">
-                  <div className="text-left">
-                    <span className="text-sm font-medium text-gray-500">Name:</span>
-                    <span className="ml-2 text-sm text-gray-900">{user?.first_name} {user?.last_name}</span>
-                  </div>
-                  <div className="text-left">
-                    <span className="text-sm font-medium text-gray-500">Username:</span>
-                    <span className="ml-2 text-sm text-gray-900">{user?.username || 'N/A'}</span>
-                  </div>
-                  <div className="text-left">
-                    <span className="text-sm font-medium text-gray-500">Email:</span>
-                    <span className="ml-2 text-sm text-gray-900">{user?.email || 'N/A'}</span>
-                  </div>
-                  <div className="text-left">
-                    <span className="text-sm font-medium text-gray-500">Status:</span>
-                    <span className="ml-2 text-sm text-gray-900 capitalize">{user?.status || 'N/A'}</span>
-                  </div>
-                  <div className="text-left">
-                    <span className="text-sm font-medium text-gray-500">Role:</span>
-                    <span className="ml-2 text-sm text-gray-900 capitalize">{user?.role || 'N/A'}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Features Section */}
-        <div className="mt-20">
-          <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
-            <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
-              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
-                <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                </svg>
-              </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Secure Authentication</h3>
-              <p className="text-gray-600">Robust JWT-based authentication with secure password hashing using Argon2.</p>
+            {/* Desktop Navigation */}
+            <div className="hidden md:flex items-center space-x-8">
+              <Link href="#features" className="text-foreground/80 hover:text-foreground transition-colors">
+                Features
+              </Link>
+              <Link href="#about" className="text-foreground/80 hover:text-foreground transition-colors">
+                About
+              </Link>
+              <Link href="#pricing" className="text-foreground/80 hover:text-foreground transition-colors">
+                Pricing
+              </Link>
+              <Separator orientation="vertical" className="h-6" />
+              {!loading && (
+                <>
+                  {isAuthenticated ? (
+                    <Button 
+                      onClick={() => router.push('/wallets')}
+                      className="bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary"
+                    >
+                      Dashboard
+                    </Button>
+                  ) : (
+                    <div className="flex items-center space-x-3">
+                      <Button 
+                        variant="ghost" 
+                        onClick={() => router.push('/auth/signin')}
+                      >
+                        Sign In
+                      </Button>
+                      <Button 
+                        onClick={handleGetStarted}
+                        className="bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary"
+                      >
+                        Get Started
+                      </Button>
+                    </div>
+                  )}
+                </>
+              )}
             </div>
 
-            <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
-              <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4">
-                <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                </svg>
-              </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">High Performance</h3>
-              <p className="text-gray-600">Built with Go backend for exceptional performance and Next.js for optimal user experience.</p>
-            </div>
-
-            <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
-              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4">
-                <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Modern Stack</h3>
-              <p className="text-gray-600">Cutting-edge technology stack with TypeScript, Tailwind CSS, and RESTful APIs.</p>
+            {/* Mobile Menu Button */}
+            <div className="md:hidden">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              >
+                {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+              </Button>
             </div>
           </div>
         </div>
-      </main>
+
+        {/* Mobile Navigation */}
+        {mobileMenuOpen && (
+          <div className="md:hidden bg-background/95 backdrop-blur-md border-t border-border/50">
+            <div className="px-4 py-4 space-y-2">
+              <Link 
+                href="#features" 
+                className="block py-2 text-foreground/80 hover:text-foreground transition-colors"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Features
+              </Link>
+              <Link 
+                href="#about" 
+                className="block py-2 text-foreground/80 hover:text-foreground transition-colors"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                About
+              </Link>
+              <Link 
+                href="#pricing" 
+                className="block py-2 text-foreground/80 hover:text-foreground transition-colors"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Pricing
+              </Link>
+              <Separator className="my-2" />
+              {!loading && (
+                <>
+                  {isAuthenticated ? (
+                    <Button 
+                      onClick={() => {
+                        router.push('/wallets');
+                        setMobileMenuOpen(false);
+                      }}
+                      className="w-full bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary"
+                    >
+                      Dashboard
+                    </Button>
+                  ) : (
+                    <div className="space-y-2">
+                      <Button 
+                        variant="outline" 
+                        className="w-full"
+                        onClick={() => {
+                          router.push('/auth/signin');
+                          setMobileMenuOpen(false);
+                        }}
+                      >
+                        Sign In
+                      </Button>
+                      <Button 
+                        className="w-full bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary"
+                        onClick={() => {
+                          handleGetStarted();
+                          setMobileMenuOpen(false);
+                        }}
+                      >
+                        Get Started
+                      </Button>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          </div>
+        )}
+      </nav>
+
+      {/* Hero Section */}
+      <section className="relative pt-20 pb-32 sm:pt-24 sm:pb-40">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <Badge variant="secondary" className="mb-8 px-4 py-2">
+              🚀 Now supporting 100+ digital assets
+            </Badge>
+            
+            <h1 className="text-4xl sm:text-6xl lg:text-7xl font-bold text-foreground mb-6">
+              The Future of{' '}
+              <span className="bg-gradient-to-r from-primary via-primary/80 to-secondary bg-clip-text text-transparent">
+                Digital Wallets
+              </span>
+            </h1>
+            
+            <p className="text-xl sm:text-2xl text-muted-foreground mb-8 max-w-3xl mx-auto leading-relaxed">
+              Secure, fast, and intuitive wallet management for the modern era. 
+              Experience the next generation of digital asset management with Bixor Engine.
+            </p>
+            
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16">
+              <Button 
+                size="lg" 
+                onClick={handleGetStarted}
+                className="bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary text-lg px-8 py-4 h-auto"
+              >
+                Get Started Free
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
+              <Button 
+                size="lg" 
+                variant="outline" 
+                className="text-lg px-8 py-4 h-auto"
+              >
+                Watch Demo
+              </Button>
+            </div>
+
+            {/* Stats */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto">
+              {stats.map((stat, index) => (
+                <div key={index} className="text-center">
+                  <div className="text-2xl sm:text-3xl font-bold text-foreground">{stat.value}</div>
+                  <div className="text-sm text-muted-foreground">{stat.label}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Features Section */}
+      <section id="features" className="py-24 bg-secondary/20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">
+              Powerful Features for Modern Users
+            </h2>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+              Everything you need to manage your digital assets safely and efficiently
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {features.map((feature, index) => {
+              const IconComponent = feature.icon;
+              return (
+                <Card key={index} className="bg-card/50 backdrop-blur-sm border-border/50 hover:bg-card/80 transition-all duration-300">
+                  <CardHeader>
+                    <div className="w-12 h-12 bg-gradient-to-r from-primary/20 to-secondary/20 rounded-lg flex items-center justify-center mb-4">
+                      <IconComponent className="h-6 w-6 text-primary" />
+                    </div>
+                    <CardTitle className="text-xl">{feature.title}</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <CardDescription className="text-base">
+                      {feature.description}
+                    </CardDescription>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="py-24">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <Card className="bg-gradient-to-br from-primary/10 via-background to-secondary/10 border-primary/20">
+            <CardContent className="pt-12 pb-12">
+              <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">
+                Ready to Get Started?
+              </h2>
+              <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
+                Join thousands of users who trust Bixor Engine for their digital asset management needs.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Button 
+                  size="lg" 
+                  onClick={handleGetStarted}
+                  className="bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary text-lg px-8 py-4 h-auto"
+                >
+                  Start Your Journey
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
+                <Button 
+                  size="lg" 
+                  variant="outline" 
+                  className="text-lg px-8 py-4 h-auto"
+                >
+                  Learn More
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </section>
 
       {/* Footer */}
-      <footer className="bg-white border-t mt-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="text-center text-gray-500">
-            <p>&copy; 2025 Bixor Engine. Built with ❤️ using Go and Next.js.</p>
+      <footer className="bg-secondary/20 border-t border-border/50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div className="col-span-1 md:col-span-2">
+              <Link 
+                href="/" 
+                className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent mb-4 inline-block"
+              >
+                Bixor Engine
+              </Link>
+              <p className="text-muted-foreground mb-4 max-w-md">
+                The next generation platform for secure digital wallet management and cryptocurrency operations.
+              </p>
+              <div className="flex space-x-4">
+                <Button variant="ghost" size="sm">
+                  <Github className="h-4 w-4" />
+                </Button>
+                <Button variant="ghost" size="sm">
+                  <Twitter className="h-4 w-4" />
+                </Button>
+                <Button variant="ghost" size="sm">
+                  <Linkedin className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+            
+            <div>
+              <h3 className="font-semibold text-foreground mb-4">Product</h3>
+              <ul className="space-y-2 text-muted-foreground">
+                <li><Link href="#" className="hover:text-foreground transition-colors">Features</Link></li>
+                <li><Link href="#" className="hover:text-foreground transition-colors">Security</Link></li>
+                <li><Link href="#" className="hover:text-foreground transition-colors">API</Link></li>
+                <li><Link href="#" className="hover:text-foreground transition-colors">Pricing</Link></li>
+              </ul>
+            </div>
+            
+            <div>
+              <h3 className="font-semibold text-foreground mb-4">Support</h3>
+              <ul className="space-y-2 text-muted-foreground">
+                <li><Link href="#" className="hover:text-foreground transition-colors">Documentation</Link></li>
+                <li><Link href="#" className="hover:text-foreground transition-colors">Help Center</Link></li>
+                <li><Link href="#" className="hover:text-foreground transition-colors">Contact</Link></li>
+                <li><Link href="#" className="hover:text-foreground transition-colors">Status</Link></li>
+              </ul>
+            </div>
+          </div>
+          
+          <Separator className="my-8" />
+          
+          <div className="flex flex-col sm:flex-row justify-between items-center text-muted-foreground">
+            <p>&copy; 2025 Bixor Engine. All rights reserved.</p>
+            <div className="flex space-x-6 mt-4 sm:mt-0">
+              <Link href="#" className="hover:text-foreground transition-colors">Privacy Policy</Link>
+              <Link href="#" className="hover:text-foreground transition-colors">Terms of Service</Link>
+            </div>
           </div>
         </div>
       </footer>
