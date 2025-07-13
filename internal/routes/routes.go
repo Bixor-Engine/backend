@@ -57,6 +57,7 @@ func SetupRoutes(db *sql.DB) *gin.Engine {
 			auth.POST("/register", authHandler.Register)
 			auth.POST("/login", authHandler.Login)
 			auth.POST("/refresh", authHandler.RefreshToken)
+			auth.GET("/me", authHandler.GetCurrentUser)
 			// Future auth endpoints will be added here
 			// auth.POST("/logout", authHandler.Logout)
 			// auth.POST("/forgot-password", authHandler.ForgotPassword)

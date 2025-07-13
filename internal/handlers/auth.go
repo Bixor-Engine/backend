@@ -355,6 +355,107 @@ func (h *AuthHandler) RefreshToken(c *gin.Context) {
 	})
 }
 
+// GetCurrentUser godoc
+// @Summary Get current authenticated user
+// @Description Get current user information based on JWT token
+// @Tags Authentication
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Success 200 {object} models.UserResponse "Current user data"
+// @Failure 401 {object} map[string]interface{} "Unauthorized - invalid or missing token"
+// @Failure 404 {object} map[string]interface{} "User not found"
+// @Failure 500 {object} map[string]interface{} "Internal server error"
+// @Router /api/v1/auth/me [get]
+func (h *AuthHandler) GetCurrentUser(c *gin.Context) {
+	// Get authorization header
+	authHeader := c.GetHeader("Authorization")
+	if authHeader == "" {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"error":   "missing_authorization",
+			"message": "Authorization header is required",
+		})
+		return
+	}
+
+	// Check if the header starts with "Bearer "
+	if !strings.HasPrefix(authHeader, "Bearer ") {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"error":   "invalid_authorization_format",
+			"message": "Authorization header must be in format 'Bearer <token>'",
+		})
+		return
+	}
+
+	// Extract the token
+	token := strings.TrimPrefix(authHeader, "Bearer ")
+
+	// Validate token and get claims
+	claims, err := models.ValidateAccessToken(token)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"error":   "invalid_token",
+			"message": "Invalid or expired access token",
+		})
+		return
+	}
+
+	// Get user from database
+	user, err := h.getUserByID(claims.UserID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			c.JSON(http.StatusNotFound, gin.H{
+				"error":   "user_not_found",
+				"message": "User not found",
+			})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error":   "database_error",
+			"message": "Failed to retrieve user data",
+		})
+		return
+	}
+
+	// Check if user is still active
+	if user.Status != "active" {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"error":   "account_inactive",
+			"message": "Account is no longer active",
+		})
+		return
+	}
+
+	// Create response
+	userResponse := models.UserResponse{
+		ID:            user.ID,
+		FirstName:     user.FirstName,
+		LastName:      user.LastName,
+		Username:      user.Username,
+		Email:         user.Email,
+		EmailStatus:   user.EmailStatus,
+		PhoneNumber:   user.PhoneNumber,
+		PhoneStatus:   user.PhoneStatus,
+		Address:       user.Address,
+		City:          user.City,
+		Country:       user.Country,
+		Role:          user.Role,
+		Status:        user.Status,
+		KYCStatus:     user.KYCStatus,
+		TwoFAEnabled:  user.TwoFAEnabled,
+		LastLoginAt:   user.LastLoginAt,
+		Language:      user.Language,
+		Timezone:      user.Timezone,
+		CreatedAt:     user.CreatedAt,
+		UpdatedAt:     user.UpdatedAt,
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "User data retrieved successfully",
+		"user":    userResponse,
+	})
+}
+
 // checkUserExists checks if a user with the given username or email already exists
 func (h *AuthHandler) checkUserExists(username, email string) (bool, error) {
 	var count int

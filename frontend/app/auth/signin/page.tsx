@@ -25,14 +25,11 @@ export default function SignIn() {
     setError('');
     
     try {
-      const response = await AuthService.login(email, password);
-      
-      // Store authentication data
-      AuthService.setAuth(response.token, response.user);
+      await AuthService.login(email, password);
       
       // Show success toast
       toast.success("Welcome back!", {
-        description: `Signed in as ${response.user.username}`,
+        description: "Successfully signed in",
         duration: 4000
       });
       

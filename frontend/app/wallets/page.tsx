@@ -1,8 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { AuthService, User } from '@/lib/auth';
+import { useAuth } from '@/hooks/use-auth';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -25,25 +24,12 @@ import {
 import { toast } from "sonner";
 
 export default function Wallets() {
-  const router = useRouter();
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { user, loading, requireAuth } = useAuth();
   const [showBalances, setShowBalances] = useState(true);
 
   useEffect(() => {
-    const checkAuth = () => {
-      if (!AuthService.isAuthenticated()) {
-        router.push('/auth/signin');
-        return;
-      }
-      
-      const userData = AuthService.getUser();
-      setUser(userData);
-      setLoading(false);
-    };
-
-    checkAuth();
-  }, [router]);
+    requireAuth();
+  }, [requireAuth]);
 
   if (loading) {
     return (
