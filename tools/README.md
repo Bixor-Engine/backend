@@ -8,6 +8,7 @@ This directory contains interactive CLI tools for testing and development of the
 |------|---------|----------|
 | [Authentication Tool](#authentication-tool) | Test complete auth flow, manage users | `tools/auth/` |
 | [Password Hash Tool](#password-hash-tool) | Generate/verify Argon2i hashes | `tools/hash/` |
+| [API Test Tool](#api-test-tool) | Test API route protection and backend secret | `tools/test-api/` |
 
 ## Authentication Tool
 
@@ -53,6 +54,95 @@ go run tools/auth/main.go
 - `POST /api/v1/auth/login` - User authentication
 - `POST /api/v1/auth/refresh` - Token refresh
 - Direct database operations for user management
+
+## API Test Tool
+
+Automated testing tool to verify API route protection and backend secret functionality.
+
+### Usage
+```bash
+# Test with default settings (localhost:8080, secret from .env)
+go run tools/test-api/main.go
+
+# Test with custom URL and secret
+go run tools/test-api/main.go -url http://localhost:8080 -secret your-secret-here
+
+# Verbose output (shows response bodies)
+go run tools/test-api/main.go -v
+```
+
+### Features
+
+The tool automatically tests:
+
+1. **Public Routes** (should work without secret):
+   - `GET /api/v1/health`
+   - `GET /api/v1/status`
+   - `GET /api/v1/info`
+
+2. **Protected Routes WITHOUT Secret** (should fail with 401):
+   - `POST /api/v1/auth/register`
+   - `POST /api/v1/auth/login`
+   - `POST /api/v1/auth/refresh`
+   - `GET /api/v1/auth/me`
+   - `POST /api/v1/auth/otp/request`
+   - `POST /api/v1/auth/otp/verify`
+
+3. **Protected Routes WITH Secret** (should work):
+   - Same endpoints as above, but with `X-Backend-Secret` header
+
+### Command Line Options
+
+| Flag | Description | Default |
+|------|-------------|---------|
+| `-url` | API base URL | `http://localhost:8080` |
+| `-secret` | Backend secret | From `BACKEND_SECRET` env var |
+| `-v` | Verbose output | `false` |
+
+### Example Output
+
+```
+==========================================
+API Route Protection Test
+==========================================
+API URL: http://localhost:8080
+Backend Secret: test...1234 (configured)
+
+==========================================
+1. Testing Public Routes
+==========================================
+✅ Health Check - PASS (HTTP 200)
+✅ Status Check - PASS (HTTP 200)
+✅ API Info - PASS (HTTP 200)
+
+==========================================
+2. Testing Protected Routes WITHOUT Secret
+==========================================
+❌ Register (no secret) - FAIL (Expected HTTP 401, Got HTTP 401)
+✅ Login (no secret) - PASS (HTTP 401)
+...
+
+==========================================
+Test Summary
+==========================================
+✅ Passed: 8
+❌ Failed: 0
+
+🎉 All tests passed! API protection is working correctly.
+```
+
+### Use Cases
+
+- **Verify Backend Secret Protection**: Ensure all protected routes require the secret
+- **CI/CD Integration**: Run automated tests before deployment
+- **Development Verification**: Quick check that middleware is working
+- **Security Auditing**: Verify no routes are accidentally exposed
+
+### Prerequisites
+
+- API server must be running
+- `BACKEND_SECRET` environment variable set (or use `-secret` flag)
+- Database must be accessible (for routes that need it)
 
 ## Password Hash Tool
 

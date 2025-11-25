@@ -14,6 +14,15 @@ import (
 	_ "github.com/lib/pq"
 )
 
+func addBackendSecret(req *http.Request) {
+	// Load environment variables
+	godotenv.Load()
+	backendSecret := os.Getenv("BACKEND_SECRET")
+	if backendSecret != "" {
+		req.Header.Set("X-Backend-Secret", backendSecret)
+	}
+}
+
 const BaseURL = "http://localhost:8080/api/v1"
 
 type RegisterRequest struct {
@@ -103,7 +112,14 @@ func registerUser() {
 	}
 
 	jsonData, _ := json.Marshal(req)
-	resp, err := http.Post(BaseURL+"/auth/register", "application/json", bytes.NewBuffer(jsonData))
+	httpReq, err := http.NewRequest("POST", BaseURL+"/auth/register", bytes.NewBuffer(jsonData))
+	if err != nil {
+		fmt.Printf("Request failed: %v\n", err)
+		return
+	}
+	httpReq.Header.Set("Content-Type", "application/json")
+	addBackendSecret(httpReq)
+	resp, err := http.DefaultClient.Do(httpReq)
 	if err != nil {
 		fmt.Printf("Request failed: %v\n", err)
 		return
@@ -146,7 +162,14 @@ func loginUser() {
 	}
 
 	jsonData, _ := json.Marshal(req)
-	resp, err := http.Post(BaseURL+"/auth/login", "application/json", bytes.NewBuffer(jsonData))
+	httpReq, err := http.NewRequest("POST", BaseURL+"/auth/login", bytes.NewBuffer(jsonData))
+	if err != nil {
+		fmt.Printf("Request failed: %v\n", err)
+		return
+	}
+	httpReq.Header.Set("Content-Type", "application/json")
+	addBackendSecret(httpReq)
+	resp, err := http.DefaultClient.Do(httpReq)
 	if err != nil {
 		fmt.Printf("Request failed: %v\n", err)
 		return
@@ -269,12 +292,19 @@ func refreshToken() {
 		return
 	}
 
-	req := map[string]string{
+	reqData := map[string]string{
 		"refresh_token": refreshToken,
 	}
 
-	jsonData, _ := json.Marshal(req)
-	resp, err := http.Post(BaseURL+"/auth/refresh", "application/json", bytes.NewBuffer(jsonData))
+	jsonData, _ := json.Marshal(reqData)
+	httpReq, err := http.NewRequest("POST", BaseURL+"/auth/refresh", bytes.NewBuffer(jsonData))
+	if err != nil {
+		fmt.Printf("Request failed: %v\n", err)
+		return
+	}
+	httpReq.Header.Set("Content-Type", "application/json")
+	addBackendSecret(httpReq)
+	resp, err := http.DefaultClient.Do(httpReq)
 	if err != nil {
 		fmt.Printf("Request failed: %v\n", err)
 		return

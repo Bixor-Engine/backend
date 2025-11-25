@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/Bixor-Engine/backend/internal/handlers"
+	"github.com/Bixor-Engine/backend/internal/middleware"
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
@@ -22,7 +23,7 @@ func SetupRoutes(db *sql.DB) *gin.Engine {
 	router.Use(func(c *gin.Context) {
 		c.Header("Access-Control-Allow-Origin", "*")
 		c.Header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-		c.Header("Access-Control-Allow-Headers", "Content-Type, Authorization")
+		c.Header("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Backend-Secret, X-API-Secret")
 
 		if c.Request.Method == "OPTIONS" {
 			c.AbortWithStatus(204)
@@ -46,35 +47,61 @@ func SetupRoutes(db *sql.DB) *gin.Engine {
 	// API version 1 routes
 	v1 := router.Group("/api/v1")
 	{
-		// Health and status endpoints
-		v1.GET("/health", healthHandler.HealthCheck)
-		v1.GET("/status", healthHandler.GetStatus)
-		v1.GET("/info", apiHandler.APIInfo)
-
-		// Authentication endpoints
-		auth := v1.Group("/auth")
+		// ============================================
+		// PUBLIC ROUTES - No authentication required
+		// ============================================
+		public := v1.Group("")
+		public.Use(middleware.PublicMiddleware())
 		{
-			auth.POST("/register", authHandler.Register)
-			auth.POST("/login", authHandler.Login)
-			auth.POST("/refresh", authHandler.RefreshToken)
-			auth.GET("/me", authHandler.GetCurrentUser)
-
-			// OTP endpoints (require authentication)
-			otp := auth.Group("/otp")
-			{
-				otp.POST("/request", authHandler.RequestOTP)
-				otp.POST("/verify", authHandler.VerifyOTP)
-			}
-
-			// Future auth endpoints will be added here
-			// auth.POST("/logout", authHandler.Logout)
-			// auth.POST("/forgot-password", authHandler.ForgotPassword)
+			// Health and status endpoints (public for monitoring)
+			public.GET("/health", healthHandler.HealthCheck)
+			public.GET("/status", healthHandler.GetStatus)
+			public.GET("/info", apiHandler.APIInfo)
 		}
 
-		// Future routes will be added here
-		// v1.GET("/users", userHandler.GetUsers)
-		// v1.POST("/orders", orderHandler.CreateOrder)
-		// v1.GET("/markets", marketHandler.GetMarkets)
+		// ============================================
+		// PROTECTED BY BACKEND SECRET - Frontend requests
+		// ============================================
+		protected := v1.Group("")
+		protected.Use(middleware.BackendSecretMiddleware())
+		{
+			// Authentication endpoints (frontend uses backend secret)
+			auth := protected.Group("/auth")
+			{
+				auth.POST("/register", authHandler.Register)
+				auth.POST("/login", authHandler.Login)
+				auth.POST("/refresh", authHandler.RefreshToken)
+				auth.GET("/me", authHandler.GetCurrentUser)
+
+				// OTP endpoints (require backend secret + JWT token)
+				otp := auth.Group("/otp")
+				{
+					otp.POST("/request", authHandler.RequestOTP)
+					otp.POST("/verify", authHandler.VerifyOTP)
+				}
+
+				// Future auth endpoints will be added here
+				// auth.POST("/logout", authHandler.Logout)
+				// auth.POST("/forgot-password", authHandler.ForgotPassword)
+			}
+
+			// Future protected routes (frontend access)
+			// protected.GET("/users", userHandler.GetUsers)
+			// protected.POST("/orders", orderHandler.CreateOrder)
+			// protected.GET("/markets", marketHandler.GetMarkets)
+		}
+
+		// ============================================
+		// PERSONAL API ROUTES - User token based (Future)
+		// ============================================
+		personal := v1.Group("/personal")
+		personal.Use(middleware.UserTokenMiddleware())
+		{
+			// Future personal API endpoints
+			// personal.GET("/trades", personalHandler.GetTrades)
+			// personal.POST("/orders", personalHandler.CreateOrder)
+			// personal.GET("/balance", personalHandler.GetBalance)
+		}
 	}
 
 	return router

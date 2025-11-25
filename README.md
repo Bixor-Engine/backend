@@ -42,6 +42,16 @@ PORT=8080
 API_VERSION=1.0.0
 JWT_SECRET=your_secure_jwt_secret_key_here
 JWT_EXPIRES_HOURS=24
+BACKEND_SECRET=your_backend_secret_key_here_change_in_production
+
+# SMTP Configuration (optional, for email sending)
+SMTP_ENABLED=false
+SMTP_HOST=smtp.example.com
+SMTP_PORT=587
+SMTP_USERNAME=your_smtp_username
+SMTP_PASSWORD=your_smtp_password
+SMTP_FROM_EMAIL=noreply@example.com
+SMTP_FROM_NAME=Bixor Engine
 ```
 
 ### 3. Install and Setup

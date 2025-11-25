@@ -52,6 +52,27 @@ export interface AuthResponse {
 export class AuthService {
   private static readonly TOKEN_KEY = 'auth_token';
   private static readonly REFRESH_TOKEN_KEY = 'refresh_token';
+  
+  // Get backend secret from environment variable
+  private static getBackendSecret(): string | null {
+    if (typeof window === 'undefined') return null;
+    return process.env.NEXT_PUBLIC_BACKEND_SECRET || null;
+  }
+  
+  // Get default headers including backend secret
+  private static getDefaultHeaders(additionalHeaders?: Record<string, string>): HeadersInit {
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json',
+      ...additionalHeaders,
+    };
+    
+    const backendSecret = this.getBackendSecret();
+    if (backendSecret) {
+      headers['X-Backend-Secret'] = backendSecret;
+    }
+    
+    return headers;
+  }
 
   static isAuthenticated(): boolean {
     if (typeof window === 'undefined') return false;
@@ -88,10 +109,9 @@ export class AuthService {
         const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
         const response = await fetch(`${apiUrl}/api/v1/auth/me`, {
           method: 'GET',
-          headers: {
+          headers: this.getDefaultHeaders({
             'Authorization': `Bearer ${accessToken}`,
-            'Content-Type': 'application/json',
-          },
+          }),
         });
 
         if (!response.ok) {
@@ -150,9 +170,7 @@ export class AuthService {
     
     const response = await fetch(`${apiUrl}/api/v1/auth/login`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: this.getDefaultHeaders(),
       body: JSON.stringify({ email, password }),
     });
 
@@ -176,9 +194,7 @@ export class AuthService {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
     const response = await fetch(`${apiUrl}/api/v1/auth/register`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: this.getDefaultHeaders(),
       body: JSON.stringify(registerData),
     });
 
@@ -203,9 +219,7 @@ export class AuthService {
       
       const response = await fetch(`${apiUrl}/api/v1/auth/refresh`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: this.getDefaultHeaders(),
         body: JSON.stringify({ refresh_token: refreshToken }),
       });
 
@@ -271,10 +285,9 @@ export class AuthService {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
     const response = await fetch(`${apiUrl}/api/v1/auth/otp/request`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+      headers: this.getDefaultHeaders({
         'Authorization': `Bearer ${token}`,
-      },
+      }),
       body: JSON.stringify({ type }),
     });
 
@@ -296,10 +309,9 @@ export class AuthService {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
     const response = await fetch(`${apiUrl}/api/v1/auth/otp/verify`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+      headers: this.getDefaultHeaders({
         'Authorization': `Bearer ${token}`,
-      },
+      }),
       body: JSON.stringify({ type, code }),
     });
 
