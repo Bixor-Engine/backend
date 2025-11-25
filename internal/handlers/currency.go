@@ -52,7 +52,7 @@ func (h *CurrencyHandler) GetCoins(c *gin.Context) {
 	}
 	defer rows.Close()
 
-	var coins []models.Coin
+	coins := make([]models.Coin, 0)
 	for rows.Next() {
 		var coin models.Coin
 		var depositGateway, withdrawGateway pq.StringArray
