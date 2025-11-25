@@ -53,23 +53,12 @@ export class AuthService {
   private static readonly TOKEN_KEY = 'auth_token';
   private static readonly REFRESH_TOKEN_KEY = 'refresh_token';
   
-  // Get backend secret from environment variable
-  private static getBackendSecret(): string | null {
-    if (typeof window === 'undefined') return null;
-    return process.env.NEXT_PUBLIC_BACKEND_SECRET || null;
-  }
-  
-  // Get default headers including backend secret
+  // Get default headers (no backend secret needed - handled by Next.js API routes)
   private static getDefaultHeaders(additionalHeaders?: Record<string, string>): HeadersInit {
     const headers: HeadersInit = {
       'Content-Type': 'application/json',
       ...additionalHeaders,
     };
-    
-    const backendSecret = this.getBackendSecret();
-    if (backendSecret) {
-      headers['X-Backend-Secret'] = backendSecret;
-    }
     
     return headers;
   }
@@ -103,11 +92,10 @@ export class AuthService {
       return null;
     }
 
-    // Function to make the API call
+    // Function to make the API call (via Next.js API route)
     const fetchUser = async (accessToken: string): Promise<User | null> => {
       try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
-        const response = await fetch(`${apiUrl}/api/v1/auth/me`, {
+        const response = await fetch('/api/auth/me', {
           method: 'GET',
           headers: this.getDefaultHeaders({
             'Authorization': `Bearer ${accessToken}`,
@@ -166,9 +154,7 @@ export class AuthService {
   }
 
   static async login(email: string, password: string): Promise<AuthResponse> {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
-    
-    const response = await fetch(`${apiUrl}/api/v1/auth/login`, {
+    const response = await fetch('/api/auth/login', {
       method: 'POST',
       headers: this.getDefaultHeaders(),
       body: JSON.stringify({ email, password }),
@@ -191,8 +177,7 @@ export class AuthService {
   }
 
   static async register(registerData: RegisterRequest): Promise<AuthResponse> {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
-    const response = await fetch(`${apiUrl}/api/v1/auth/register`, {
+    const response = await fetch('/api/auth/register', {
       method: 'POST',
       headers: this.getDefaultHeaders(),
       body: JSON.stringify(registerData),
@@ -215,9 +200,7 @@ export class AuthService {
     }
 
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
-      
-      const response = await fetch(`${apiUrl}/api/v1/auth/refresh`, {
+      const response = await fetch('/api/auth/refresh', {
         method: 'POST',
         headers: this.getDefaultHeaders(),
         body: JSON.stringify({ refresh_token: refreshToken }),
@@ -282,8 +265,7 @@ export class AuthService {
       throw new Error('Not authenticated');
     }
 
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
-    const response = await fetch(`${apiUrl}/api/v1/auth/otp/request`, {
+    const response = await fetch('/api/auth/otp/request', {
       method: 'POST',
       headers: this.getDefaultHeaders({
         'Authorization': `Bearer ${token}`,
@@ -306,8 +288,7 @@ export class AuthService {
       throw new Error('Not authenticated');
     }
 
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
-    const response = await fetch(`${apiUrl}/api/v1/auth/otp/verify`, {
+    const response = await fetch('/api/auth/otp/verify', {
       method: 'POST',
       headers: this.getDefaultHeaders({
         'Authorization': `Bearer ${token}`,

@@ -27,16 +27,23 @@ npm install
 ```
 
 2. Configure environment variables:
+
+Create `.env.local` file in the `frontend` directory with your configuration:
+
+**Server-side variables (NEVER exposed to browser):**
 ```bash
-cp .env.local.example .env.local
+BACKEND_URL=http://localhost:8080
+BACKEND_SECRET=your-super-secret-key-here-change-in-production
 ```
 
-Edit `.env.local` with your configuration:
+**Client-side variables (exposed to browser):**
 ```bash
 NEXT_PUBLIC_API_URL=http://localhost:8080
 NEXT_PUBLIC_APP_NAME=Bixor Engine
 NEXT_PUBLIC_APP_VERSION=1.0.0
 ```
+
+**Important:** The `BACKEND_SECRET` is used only by Next.js API routes (server-side) and is never exposed to the browser. This ensures the secret remains secure.
 
 3. Start the development server:
 ```bash
@@ -71,18 +78,20 @@ frontend/
 
 ### Sign Up
 1. User fills registration form (`/auth/signup`)
-2. Frontend calls `POST /api/v1/auth/register`
-3. On success, redirects to sign in page
-4. On error, displays error message
+2. Frontend calls `POST /api/auth/register` (Next.js API route)
+3. Next.js API route calls backend `POST /api/v1/auth/register` with `BACKEND_SECRET`
+4. On success, redirects to sign in page
+5. On error, displays error message
 
 ### Sign In
 1. User fills login form (`/auth/signin`)
-2. Frontend calls `POST /api/v1/auth/login`
-3. On success:
+2. Frontend calls `POST /api/auth/login` (Next.js API route)
+3. Next.js API route calls backend `POST /api/v1/auth/login` with `BACKEND_SECRET`
+4. On success:
    - Stores JWT token in localStorage
    - Stores user data in localStorage
-   - Redirects to home page
-4. On error, displays error message
+   - Redirects to home page or verification page if email not verified
+5. On error, displays error message
 
 ### Authentication State
 - `AuthService` class manages all auth operations
@@ -168,9 +177,18 @@ npm run lint
 
 ### Environment Variables
 
+**Server-side (used by Next.js API routes, never exposed to browser):**
+
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `NEXT_PUBLIC_API_URL` | Backend API URL | `http://localhost:8080` |
+| `BACKEND_URL` | Backend API URL | `http://localhost:8080` |
+| `BACKEND_SECRET` | Backend secret for API authentication | **Required** |
+
+**Client-side (exposed to browser via `NEXT_PUBLIC_` prefix):**
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `NEXT_PUBLIC_API_URL` | Backend API URL (deprecated, now using Next.js API routes) | `http://localhost:8080` |
 | `NEXT_PUBLIC_APP_NAME` | Application name | `Bixor Engine` |
 | `NEXT_PUBLIC_APP_VERSION` | App version | `1.0.0` |
 
