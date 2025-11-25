@@ -29,6 +29,10 @@ type App struct {
 // @in header
 // @name Authorization
 // @description Type "Bearer" followed by a space and JWT token.
+// @securityDefinitions.apikey BackendSecret
+// @in header
+// @name X-Backend-Secret
+// @description Backend secret for API authentication (required for protected routes)
 func main() {
 	// Load environment variables
 	if err := godotenv.Load(); err != nil {

@@ -226,7 +226,28 @@ export class AuthService {
     }
   }
 
-  static logout(): void {
+  static async logout(): Promise<void> {
+    const token = this.getToken();
+    
+    // Try to call backend logout endpoint (optional - will still clear local tokens if it fails)
+    if (token) {
+      try {
+        const response = await fetch('/api/auth/logout', {
+          method: 'POST',
+          headers: this.getDefaultHeaders({
+            'Authorization': `Bearer ${token}`,
+          }),
+        });
+        // Don't throw on error - still clear local tokens
+        if (!response.ok) {
+          // Log silently or ignore
+        }
+      } catch (error) {
+        // Ignore errors - still clear local tokens
+      }
+    }
+    
+    // Always clear local tokens
     this.clearAuth();
   }
 

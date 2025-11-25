@@ -40,8 +40,8 @@ export function ProtectedNavbar({ user, currentPage }: ProtectedNavbarProps) {
   const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const handleLogout = () => {
-    AuthService.logout();
+  const handleLogout = async () => {
+    await AuthService.logout();
     toast.success("Signed out successfully");
     router.push('/');
   };

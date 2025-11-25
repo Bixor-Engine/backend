@@ -49,6 +49,11 @@ const docTemplate = `{
         },
         "/api/v1/auth/login": {
             "post": {
+                "security": [
+                    {
+                        "BackendSecret": []
+                    }
+                ],
                 "description": "Authenticate user with email and password, returns JWT tokens",
                 "consumes": [
                     "application/json"
@@ -102,9 +107,51 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/auth/logout": {
+            "post": {
+                "security": [
+                    {
+                        "BackendSecret": []
+                    },
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Logout the current user and invalidate session",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Logout user",
+                "responses": {
+                    "200": {
+                        "description": "Logout successful",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - invalid or missing token",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/auth/me": {
             "get": {
                 "security": [
+                    {
+                        "BackendSecret": []
+                    },
                     {
                         "BearerAuth": []
                     }
@@ -154,6 +201,9 @@ const docTemplate = `{
         "/api/v1/auth/otp/request": {
             "post": {
                 "security": [
+                    {
+                        "BackendSecret": []
+                    },
                     {
                         "BearerAuth": []
                     }
@@ -214,6 +264,9 @@ const docTemplate = `{
         "/api/v1/auth/otp/verify": {
             "post": {
                 "security": [
+                    {
+                        "BackendSecret": []
+                    },
                     {
                         "BearerAuth": []
                     }
@@ -280,6 +333,11 @@ const docTemplate = `{
         },
         "/api/v1/auth/refresh": {
             "post": {
+                "security": [
+                    {
+                        "BackendSecret": []
+                    }
+                ],
                 "description": "Generate new JWT tokens using a valid refresh token",
                 "consumes": [
                     "application/json"
@@ -335,6 +393,11 @@ const docTemplate = `{
         },
         "/api/v1/auth/register": {
             "post": {
+                "security": [
+                    {
+                        "BackendSecret": []
+                    }
+                ],
                 "description": "Register a new user account with email and password",
                 "consumes": [
                     "application/json"
@@ -784,6 +847,12 @@ const docTemplate = `{
         }
     },
     "securityDefinitions": {
+        "BackendSecret": {
+            "description": "Backend secret for API authentication (required for protected routes)",
+            "type": "apiKey",
+            "name": "X-Backend-Secret",
+            "in": "header"
+        },
         "BearerAuth": {
             "description": "Type \"Bearer\" followed by a space and JWT token.",
             "type": "apiKey",

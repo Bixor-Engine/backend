@@ -44,8 +44,8 @@ export function useAuth() {
     checkAuthAndFetchUser();
   }, []);
 
-  const logout = () => {
-    AuthService.logout();
+  const logout = async () => {
+    await AuthService.logout();
     setUser(null);
     setIsAuthenticated(false);
     router.push('/');

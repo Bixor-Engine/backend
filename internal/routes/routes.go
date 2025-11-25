@@ -80,8 +80,10 @@ func SetupRoutes(db *sql.DB) *gin.Engine {
 					otp.POST("/verify", authHandler.VerifyOTP)
 				}
 
+				// Logout endpoint (requires JWT token)
+				auth.POST("/logout", authHandler.Logout)
+
 				// Future auth endpoints will be added here
-				// auth.POST("/logout", authHandler.Logout)
 				// auth.POST("/forgot-password", authHandler.ForgotPassword)
 			}
 

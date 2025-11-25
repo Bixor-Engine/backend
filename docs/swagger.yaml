@@ -266,7 +266,33 @@ paths:
           schema:
             additionalProperties: true
             type: object
+      security:
+      - BackendSecret: []
       summary: User login
+      tags:
+      - Authentication
+  /api/v1/auth/logout:
+    post:
+      consumes:
+      - application/json
+      description: Logout the current user and invalidate session
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Logout successful
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized - invalid or missing token
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BackendSecret: []
+      - BearerAuth: []
+      summary: Logout user
       tags:
       - Authentication
   /api/v1/auth/me:
@@ -297,6 +323,7 @@ paths:
             additionalProperties: true
             type: object
       security:
+      - BackendSecret: []
       - BearerAuth: []
       summary: Get current authenticated user
       tags:
@@ -336,6 +363,7 @@ paths:
             additionalProperties: true
             type: object
       security:
+      - BackendSecret: []
       - BearerAuth: []
       summary: Request an OTP code
       tags:
@@ -380,6 +408,7 @@ paths:
             additionalProperties: true
             type: object
       security:
+      - BackendSecret: []
       - BearerAuth: []
       summary: Verify an OTP code
       tags:
@@ -418,6 +447,8 @@ paths:
           schema:
             additionalProperties: true
             type: object
+      security:
+      - BackendSecret: []
       summary: Refresh JWT tokens
       tags:
       - Authentication
@@ -455,6 +486,8 @@ paths:
           schema:
             additionalProperties: true
             type: object
+      security:
+      - BackendSecret: []
       summary: Register a new user
       tags:
       - Authentication
@@ -524,6 +557,11 @@ schemes:
 - http
 - https
 securityDefinitions:
+  BackendSecret:
+    description: Backend secret for API authentication (required for protected routes)
+    in: header
+    name: X-Backend-Secret
+    type: apiKey
   BearerAuth:
     description: Type "Bearer" followed by a space and JWT token.
     in: header

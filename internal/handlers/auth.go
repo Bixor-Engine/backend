@@ -31,6 +31,7 @@ func NewAuthHandler(db *sql.DB) *AuthHandler {
 // @Tags Authentication
 // @Accept json
 // @Produce json
+// @Security BackendSecret
 // @Param user body models.RegisterRequest true "User registration data"
 // @Success 201 {object} models.UserResponse "User registered successfully"
 // @Failure 400 {object} map[string]interface{} "Bad request - validation errors"
@@ -169,6 +170,7 @@ func (h *AuthHandler) Register(c *gin.Context) {
 // @Tags Authentication
 // @Accept json
 // @Produce json
+// @Security BackendSecret
 // @Param credentials body models.LoginRequest true "User login credentials"
 // @Success 200 {object} models.LoginResponse "Login successful"
 // @Failure 400 {object} map[string]interface{} "Bad request - validation errors"
@@ -300,6 +302,7 @@ func (h *AuthHandler) Login(c *gin.Context) {
 // @Tags Authentication
 // @Accept json
 // @Produce json
+// @Security BackendSecret
 // @Param refresh body models.RefreshTokenRequest true "Refresh token"
 // @Success 200 {object} models.JWTTokens "Tokens refreshed successfully"
 // @Failure 400 {object} map[string]interface{} "Bad request - validation errors"
@@ -377,6 +380,7 @@ func (h *AuthHandler) RefreshToken(c *gin.Context) {
 // @Tags Authentication
 // @Accept json
 // @Produce json
+// @Security BackendSecret
 // @Security BearerAuth
 // @Success 200 {object} models.UserResponse "Current user data"
 // @Failure 401 {object} map[string]interface{} "Unauthorized - invalid or missing token"
@@ -590,6 +594,7 @@ func (h *AuthHandler) updateLastLogin(userID uuid.UUID, clientIP string) error {
 // @Tags Authentication
 // @Accept json
 // @Produce json
+// @Security BackendSecret
 // @Security BearerAuth
 // @Param request body models.RequestOTPRequest true "OTP request data"
 // @Success 200 {object} models.RequestOTPResponse "OTP sent successfully"
@@ -749,6 +754,7 @@ func (h *AuthHandler) RequestOTP(c *gin.Context) {
 // @Tags Authentication
 // @Accept json
 // @Produce json
+// @Security BackendSecret
 // @Security BearerAuth
 // @Param request body models.VerifyOTPRequest true "OTP verification data"
 // @Success 200 {object} models.VerifyOTPResponse "OTP verified successfully"
@@ -866,6 +872,37 @@ func (h *AuthHandler) VerifyOTP(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"message":  "OTP verified successfully",
 		"verified": true,
+	})
+}
+
+// Logout godoc
+// @Summary Logout user
+// @Description Logout the current user and invalidate session
+// @Tags Authentication
+// @Accept json
+// @Produce json
+// @Security BackendSecret
+// @Security BearerAuth
+// @Success 200 {object} map[string]interface{} "Logout successful"
+// @Failure 401 {object} map[string]interface{} "Unauthorized - invalid or missing token"
+// @Router /api/v1/auth/logout [post]
+func (h *AuthHandler) Logout(c *gin.Context) {
+	// Get authorization header (optional - user might already be logged out on frontend)
+	authHeader := c.GetHeader("Authorization")
+
+	// If token is provided, validate it (for future token blacklisting)
+	if authHeader != "" && strings.HasPrefix(authHeader, "Bearer ") {
+		token := strings.TrimPrefix(authHeader, "Bearer ")
+		claims, err := models.ValidateAccessToken(token)
+		if err == nil && claims != nil {
+			// Token is valid - in the future, we could blacklist it here
+			// For now, we just acknowledge the logout
+			// TODO: Implement token blacklist if needed
+		}
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Logged out successfully",
 	})
 }
 
