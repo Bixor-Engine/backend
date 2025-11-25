@@ -16,7 +16,7 @@ func NewAPIHandler() *APIHandler {
 // LandingPage godoc
 // @Summary Landing page
 // @Description Get basic information about the Bixor Trading Engine
-// @Tags General
+// @Tags System
 // @Accept json
 // @Produce json
 // @Success 200 {object} map[string]string "Landing page message"
@@ -30,7 +30,7 @@ func (h *APIHandler) LandingPage(c *gin.Context) {
 // APIInfo godoc
 // @Summary API information
 // @Description Get detailed information about all available services and endpoints
-// @Tags General
+// @Tags System
 // @Accept json
 // @Produce json
 // @Success 200 {object} map[string]interface{} "API information with services and endpoints"

@@ -7,8 +7,6 @@ import (
 	"github.com/Bixor-Engine/backend/internal/handlers"
 	"github.com/Bixor-Engine/backend/internal/middleware"
 	"github.com/gin-gonic/gin"
-	swaggerFiles "github.com/swaggo/files"
-	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 func SetupRoutes(db *sql.DB) *gin.Engine {
@@ -18,6 +16,7 @@ func SetupRoutes(db *sql.DB) *gin.Engine {
 	apiHandler := handlers.NewAPIHandler()
 	healthHandler := handlers.NewHealthHandler(db)
 	authHandler := handlers.NewAuthHandler(db)
+	currencyHandler := handlers.NewCurrencyHandler(db)
 
 	// CORS middleware
 	router.Use(func(c *gin.Context) {
@@ -36,12 +35,52 @@ func SetupRoutes(db *sql.DB) *gin.Engine {
 	// Landing page
 	router.GET("/", apiHandler.LandingPage)
 
-	// Swagger documentation
-	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	// Load HTML templates
+	router.LoadHTMLGlob("internal/templates/*")
 
-	// Alternative docs route
+	// API Documentation landing page
 	router.GET("/docs", func(c *gin.Context) {
-		c.Redirect(http.StatusMovedPermanently, "/swagger/index.html")
+		c.HTML(http.StatusOK, "docs.html", gin.H{})
+	})
+	router.GET("/docs/", func(c *gin.Context) {
+		c.Redirect(http.StatusMovedPermanently, "/docs")
+	})
+	router.GET("/docs/index.html", func(c *gin.Context) {
+		c.Redirect(http.StatusMovedPermanently, "/docs")
+	})
+
+	// Swagger spec endpoints (JSON)
+	swaggerHandler := handlers.NewSwaggerHandler()
+	router.GET("/docs/public.json", swaggerHandler.GetPublicSwaggerSpec)
+	router.GET("/docs/private.json", swaggerHandler.GetPrivateSwaggerSpec)
+	router.GET("/docs/personal.json", swaggerHandler.GetPersonalSwaggerSpec)
+
+	// Swagger UI endpoints
+	router.GET("/docs/public", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "swagger.html", gin.H{
+			"Title":   "Public API",
+			"specURL": "/docs/public.json",
+		})
+	})
+	router.GET("/docs/private", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "swagger.html", gin.H{
+			"Title":   "Private API",
+			"specURL": "/docs/private.json",
+		})
+	})
+	router.GET("/docs/personal", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "swagger.html", gin.H{
+			"Title":   "Personal API",
+			"specURL": "/docs/personal.json",
+		})
+	})
+
+	// Redirect /swagger to /docs for documentation landing page
+	router.GET("/swagger", func(c *gin.Context) {
+		c.Redirect(http.StatusMovedPermanently, "/docs")
+	})
+	router.GET("/swagger/*any", func(c *gin.Context) {
+		c.Redirect(http.StatusMovedPermanently, "/docs")
 	})
 
 	// API version 1 routes
@@ -57,6 +96,13 @@ func SetupRoutes(db *sql.DB) *gin.Engine {
 			public.GET("/health", healthHandler.HealthCheck)
 			public.GET("/status", healthHandler.GetStatus)
 			public.GET("/info", apiHandler.APIInfo)
+
+			// Currency endpoints (public - no authentication required)
+			currency := public.Group("/currency")
+			{
+				currency.GET("", currencyHandler.GetCoins)
+				currency.GET("/:ticker", currencyHandler.GetCoinByTicker)
+			}
 		}
 
 		// ============================================

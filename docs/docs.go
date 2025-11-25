@@ -31,7 +31,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "General"
+                    "System"
                 ],
                 "summary": "Landing page",
                 "responses": {
@@ -62,7 +62,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Authentication"
+                    "Authorization"
                 ],
                 "summary": "User login",
                 "parameters": [
@@ -125,7 +125,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Authentication"
+                    "Authorization"
                 ],
                 "summary": "Logout user",
                 "responses": {
@@ -164,7 +164,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Authentication"
+                    "Authorization"
                 ],
                 "summary": "Get current authenticated user",
                 "responses": {
@@ -216,7 +216,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Authentication"
+                    "Authorization"
                 ],
                 "summary": "Request an OTP code",
                 "parameters": [
@@ -279,7 +279,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Authentication"
+                    "Authorization"
                 ],
                 "summary": "Verify an OTP code",
                 "parameters": [
@@ -346,7 +346,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Authentication"
+                    "Authorization"
                 ],
                 "summary": "Refresh JWT tokens",
                 "parameters": [
@@ -406,7 +406,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Authentication"
+                    "Authorization"
                 ],
                 "summary": "Register a new user",
                 "parameters": [
@@ -451,6 +451,82 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/currency": {
+            "get": {
+                "description": "Retrieve a list of all supported cryptocurrencies",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Currency"
+                ],
+                "summary": "Get list of all supported coins",
+                "responses": {
+                    "200": {
+                        "description": "List of coins",
+                        "schema": {
+                            "$ref": "#/definitions/models.CoinListResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/currency/{ticker}": {
+            "get": {
+                "description": "Retrieve detailed information about a specific cryptocurrency by its ticker symbol",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Currency"
+                ],
+                "summary": "Get coin information by ticker",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Coin ticker symbol (e.g., BTC, ETH)",
+                        "name": "ticker",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Coin information",
+                        "schema": {
+                            "$ref": "#/definitions/models.CoinResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Coin not found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/health": {
             "get": {
                 "description": "Check the health status of all services including API and database",
@@ -461,7 +537,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Monitoring"
+                    "System"
                 ],
                 "summary": "Health check for all services",
                 "responses": {
@@ -496,7 +572,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "General"
+                    "System"
                 ],
                 "summary": "API information",
                 "responses": {
@@ -520,7 +596,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Monitoring"
+                    "System"
                 ],
                 "summary": "Get status of all services",
                 "responses": {
@@ -584,6 +660,109 @@ const docTemplate = `{
                 },
                 "version": {
                     "type": "string"
+                }
+            }
+        },
+        "models.Coin": {
+            "type": "object",
+            "properties": {
+                "confirmation": {
+                    "type": "integer"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "decimal": {
+                    "type": "integer"
+                },
+                "deposit_fee": {
+                    "type": "string"
+                },
+                "deposit_fee_type": {
+                    "type": "integer"
+                },
+                "deposit_gateway": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "deposit_status": {
+                    "type": "integer"
+                },
+                "explorer": {
+                    "type": "string"
+                },
+                "explorer_address": {
+                    "type": "string"
+                },
+                "explorer_tx": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "logo": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "price": {
+                    "description": "Using string to preserve precision",
+                    "type": "string"
+                },
+                "price_decimal": {
+                    "type": "integer"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "ticker": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "website": {
+                    "type": "string"
+                },
+                "withdraw_fee": {
+                    "type": "string"
+                },
+                "withdraw_fee_type": {
+                    "type": "integer"
+                },
+                "withdraw_gateway": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "withdraw_status": {
+                    "type": "integer"
+                }
+            }
+        },
+        "models.CoinListResponse": {
+            "type": "object",
+            "properties": {
+                "coins": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Coin"
+                    }
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "models.CoinResponse": {
+            "type": "object",
+            "properties": {
+                "coin": {
+                    "$ref": "#/definitions/models.Coin"
                 }
             }
         },

@@ -26,6 +26,74 @@ definitions:
       version:
         type: string
     type: object
+  models.Coin:
+    properties:
+      confirmation:
+        type: integer
+      created_at:
+        type: string
+      decimal:
+        type: integer
+      deposit_fee:
+        type: string
+      deposit_fee_type:
+        type: integer
+      deposit_gateway:
+        items:
+          type: string
+        type: array
+      deposit_status:
+        type: integer
+      explorer:
+        type: string
+      explorer_address:
+        type: string
+      explorer_tx:
+        type: string
+      id:
+        type: integer
+      logo:
+        type: string
+      name:
+        type: string
+      price:
+        description: Using string to preserve precision
+        type: string
+      price_decimal:
+        type: integer
+      status:
+        type: integer
+      ticker:
+        type: string
+      updated_at:
+        type: string
+      website:
+        type: string
+      withdraw_fee:
+        type: string
+      withdraw_fee_type:
+        type: integer
+      withdraw_gateway:
+        items:
+          type: string
+        type: array
+      withdraw_status:
+        type: integer
+    type: object
+  models.CoinListResponse:
+    properties:
+      coins:
+        items:
+          $ref: '#/definitions/models.Coin'
+        type: array
+      total:
+        type: integer
+    type: object
+  models.CoinResponse:
+    properties:
+      coin:
+        $ref: '#/definitions/models.Coin'
+    type: object
   models.JWTTokens:
     properties:
       access_token:
@@ -231,7 +299,7 @@ paths:
             type: object
       summary: Landing page
       tags:
-      - General
+      - System
   /api/v1/auth/login:
     post:
       consumes:
@@ -270,7 +338,7 @@ paths:
       - BackendSecret: []
       summary: User login
       tags:
-      - Authentication
+      - Authorization
   /api/v1/auth/logout:
     post:
       consumes:
@@ -294,7 +362,7 @@ paths:
       - BearerAuth: []
       summary: Logout user
       tags:
-      - Authentication
+      - Authorization
   /api/v1/auth/me:
     get:
       consumes:
@@ -327,7 +395,7 @@ paths:
       - BearerAuth: []
       summary: Get current authenticated user
       tags:
-      - Authentication
+      - Authorization
   /api/v1/auth/otp/request:
     post:
       consumes:
@@ -367,7 +435,7 @@ paths:
       - BearerAuth: []
       summary: Request an OTP code
       tags:
-      - Authentication
+      - Authorization
   /api/v1/auth/otp/verify:
     post:
       consumes:
@@ -412,7 +480,7 @@ paths:
       - BearerAuth: []
       summary: Verify an OTP code
       tags:
-      - Authentication
+      - Authorization
   /api/v1/auth/refresh:
     post:
       consumes:
@@ -451,7 +519,7 @@ paths:
       - BackendSecret: []
       summary: Refresh JWT tokens
       tags:
-      - Authentication
+      - Authorization
   /api/v1/auth/register:
     post:
       consumes:
@@ -490,7 +558,59 @@ paths:
       - BackendSecret: []
       summary: Register a new user
       tags:
-      - Authentication
+      - Authorization
+  /api/v1/currency:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a list of all supported cryptocurrencies
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of coins
+          schema:
+            $ref: '#/definitions/models.CoinListResponse'
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get list of all supported coins
+      tags:
+      - Currency
+  /api/v1/currency/{ticker}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve detailed information about a specific cryptocurrency by
+        its ticker symbol
+      parameters:
+      - description: Coin ticker symbol (e.g., BTC, ETH)
+        in: path
+        name: ticker
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Coin information
+          schema:
+            $ref: '#/definitions/models.CoinResponse'
+        "404":
+          description: Coin not found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get coin information by ticker
+      tags:
+      - Currency
   /api/v1/health:
     get:
       consumes:
@@ -513,7 +633,7 @@ paths:
             type: array
       summary: Health check for all services
       tags:
-      - Monitoring
+      - System
   /api/v1/info:
     get:
       consumes:
@@ -529,7 +649,7 @@ paths:
             type: object
       summary: API information
       tags:
-      - General
+      - System
   /api/v1/status:
     get:
       consumes:
@@ -552,7 +672,7 @@ paths:
             type: array
       summary: Get status of all services
       tags:
-      - Monitoring
+      - System
 schemes:
 - http
 - https

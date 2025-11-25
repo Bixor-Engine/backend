@@ -177,3 +177,41 @@ type VerifyOTPResponse struct {
 	Message  string `json:"message"`
 	Verified bool   `json:"verified"`
 }
+
+// Coin represents a cryptocurrency coin
+type Coin struct {
+	ID              int       `json:"id" db:"id"`
+	Name            string    `json:"name" db:"name"`
+	Ticker          string    `json:"ticker" db:"ticker"`
+	Decimal         int       `json:"decimal" db:"decimal"`
+	PriceDecimal    int       `json:"price_decimal" db:"price_decimal"`
+	Logo            *string   `json:"logo,omitempty" db:"logo"`
+	Price           string    `json:"price" db:"price"` // Using string to preserve precision
+	DepositGateway  []string  `json:"deposit_gateway" db:"deposit_gateway"`
+	WithdrawGateway []string  `json:"withdraw_gateway" db:"withdraw_gateway"`
+	DepositFee      *string   `json:"deposit_fee,omitempty" db:"deposit_fee"`
+	WithdrawFee     *string   `json:"withdraw_fee,omitempty" db:"withdraw_fee"`
+	DepositFeeType  *int      `json:"deposit_fee_type,omitempty" db:"deposit_fee_type"`
+	WithdrawFeeType *int      `json:"withdraw_fee_type,omitempty" db:"withdraw_fee_type"`
+	Confirmation    *int      `json:"confirmation,omitempty" db:"confirmation"`
+	Status          int       `json:"status" db:"status"`
+	WithdrawStatus  *int      `json:"withdraw_status,omitempty" db:"withdraw_status"`
+	DepositStatus   *int      `json:"deposit_status,omitempty" db:"deposit_status"`
+	Website         *string   `json:"website,omitempty" db:"website"`
+	Explorer        *string   `json:"explorer,omitempty" db:"explorer"`
+	ExplorerTx      *string   `json:"explorer_tx,omitempty" db:"explorer_tx"`
+	ExplorerAddress *string   `json:"explorer_address,omitempty" db:"explorer_address"`
+	CreatedAt       time.Time `json:"created_at" db:"created_at"`
+	UpdatedAt       time.Time `json:"updated_at" db:"updated_at"`
+}
+
+// CoinListResponse represents the response for listing coins
+type CoinListResponse struct {
+	Coins []Coin `json:"coins"`
+	Total int    `json:"total"`
+}
+
+// CoinResponse represents a single coin response
+type CoinResponse struct {
+	Coin Coin `json:"coin"`
+}

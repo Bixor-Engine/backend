@@ -74,19 +74,40 @@ The API server will be available at `http://localhost:8080`
 
 ## Available Features
 
-### Authentication API
-- **POST /api/v1/auth/register** - User registration
-- **POST /api/v1/auth/login** - User login with JWT tokens
-- **POST /api/v1/auth/refresh** - JWT token refresh
-
-### System Monitoring
+### Public API Endpoints (No Authentication Required)
 - **GET /api/v1/health** - Health check for API and database
 - **GET /api/v1/status** - Service status information
 - **GET /api/v1/info** - API information and available endpoints
+- **GET /api/v1/currency** - List all supported cryptocurrencies
+- **GET /api/v1/currency/:ticker** - Get coin information by ticker
+
+### Private API Endpoints (Backend Secret Required)
+- **POST /api/v1/auth/register** - User registration
+- **POST /api/v1/auth/login** - User login with JWT tokens
+- **POST /api/v1/auth/refresh** - JWT token refresh
+- **GET /api/v1/auth/me** - Get current authenticated user
+- **POST /api/v1/auth/logout** - Logout user
+- **POST /api/v1/auth/otp/request** - Request OTP code
+- **POST /api/v1/auth/otp/verify** - Verify OTP code
 
 ### API Documentation
-- **Swagger UI**: http://localhost:8080/swagger/index.html
-- **Quick Access**: http://localhost:8080/docs
+
+The API documentation is organized into separate sections based on access level:
+
+- **Documentation Landing Page**: http://localhost:8080/docs
+  - Navigate to different API sections from here
+
+- **Public API**: http://localhost:8080/docs/public
+  - System health, status, and currency information endpoints
+  - No authentication required
+
+- **Private API**: http://localhost:8080/docs/private
+  - Authentication, registration, and user management endpoints
+  - Requires backend secret (X-Backend-Secret header)
+
+- **Personal API**: http://localhost:8080/docs/personal
+  - User-specific endpoints for personal data and operations
+  - Requires personal token (X-Personal-Token header)
 
 ## Database Schema
 
@@ -101,6 +122,20 @@ Complete user management with the following fields:
 - Security features (twofa_enabled, last_login tracking)
 - Referral system support
 - Localization (language, timezone)
+
+### OTPs Table
+One-Time Password management for email verification and other verification purposes:
+- OTP codes with expiration
+- Support for multiple OTP types (email-verification, password-reset, 2fa, phone-verification)
+- Automatic invalidation of old unused codes
+
+### Coins Table
+Cryptocurrency management:
+- Coin information (name, ticker, decimals, price)
+- Gateway support (deposit/withdraw gateways as arrays)
+- Fee configuration (deposit/withdraw fees and types)
+- Status management (active/inactive, deposit/withdraw status)
+- Explorer links (website, explorer, transaction, address)
 
 **Note**: Trading-specific tables (orders, trades, markets, wallets) are not yet implemented.
 
@@ -156,8 +191,13 @@ bixor-engine/
 
 - **Password Hashing**: Argon2i with secure parameters
 - **JWT Authentication**: Access and refresh token system
+- **API Route Protection**: 
+  - Public routes: No authentication required
+  - Private routes: Protected with backend secret (X-Backend-Secret header)
+  - Personal routes: Protected with personal token (X-Personal-Token header) - Future implementation
 - **Input Validation**: Request validation with detailed error messages
 - **Database Constraints**: Enforced data integrity at database level
+- **Email Verification**: OTP-based email verification system
 
 ## Testing
 
@@ -166,7 +206,7 @@ bixor-engine/
 curl http://localhost:8080/api/v1/health
 
 # Interactive testing via Swagger UI
-# Visit: http://localhost:8080/swagger/index.html
+# Visit: http://localhost:8080/docs to access all API documentation sections
 ```
 
 ## Planned Features
@@ -189,12 +229,19 @@ The following features are planned but not yet implemented:
 
 ## API Testing
 
-Example authentication flow:
+Example API usage:
 
 ```bash
-# Register a new user
+# Test public endpoint (no authentication required)
+curl http://localhost:8080/api/v1/health
+
+# Get list of supported coins (public)
+curl http://localhost:8080/api/v1/currency
+
+# Register a new user (requires backend secret)
 curl -X POST http://localhost:8080/api/v1/auth/register \
   -H "Content-Type: application/json" \
+  -H "X-Backend-Secret: your_backend_secret_key_here" \
   -d '{
     "username": "testuser",
     "email": "test@example.com",
@@ -203,13 +250,19 @@ curl -X POST http://localhost:8080/api/v1/auth/register \
     "last_name": "User"
   }'
 
-# Login
+# Login (requires backend secret)
 curl -X POST http://localhost:8080/api/v1/auth/login \
   -H "Content-Type: application/json" \
+  -H "X-Backend-Secret: your_backend_secret_key_here" \
   -d '{
     "email": "test@example.com",
     "password": "securepassword123"
   }'
+
+# Get current user (requires backend secret + JWT token)
+curl -X GET http://localhost:8080/api/v1/auth/me \
+  -H "X-Backend-Secret: your_backend_secret_key_here" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN_HERE"
 ```
 
 ## Contributing

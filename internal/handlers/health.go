@@ -61,7 +61,7 @@ func (h *HealthHandler) checkDatabaseHealth() (bool, string, time.Duration) {
 // HealthCheck godoc
 // @Summary Health check for all services
 // @Description Check the health status of all services including API and database
-// @Tags Monitoring
+// @Tags System
 // @Accept json
 // @Produce json
 // @Success 200 {array} ServiceHealth "All services are healthy"
@@ -114,7 +114,7 @@ func (h *HealthHandler) HealthCheck(c *gin.Context) {
 // GetStatus godoc
 // @Summary Get status of all services
 // @Description Get the current operational status of all services
-// @Tags Monitoring
+// @Tags System
 // @Accept json
 // @Produce json
 // @Success 200 {array} ServiceStatus "All services are active"

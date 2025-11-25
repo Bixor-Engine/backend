@@ -28,7 +28,7 @@ func NewAuthHandler(db *sql.DB) *AuthHandler {
 // Register godoc
 // @Summary Register a new user
 // @Description Register a new user account with email and password
-// @Tags Authentication
+// @Tags Authorization
 // @Accept json
 // @Produce json
 // @Security BackendSecret
@@ -167,7 +167,7 @@ func (h *AuthHandler) Register(c *gin.Context) {
 // Login godoc
 // @Summary User login
 // @Description Authenticate user with email and password, returns JWT tokens
-// @Tags Authentication
+// @Tags Authorization
 // @Accept json
 // @Produce json
 // @Security BackendSecret
@@ -299,7 +299,7 @@ func (h *AuthHandler) Login(c *gin.Context) {
 // RefreshToken godoc
 // @Summary Refresh JWT tokens
 // @Description Generate new JWT tokens using a valid refresh token
-// @Tags Authentication
+// @Tags Authorization
 // @Accept json
 // @Produce json
 // @Security BackendSecret
@@ -377,7 +377,7 @@ func (h *AuthHandler) RefreshToken(c *gin.Context) {
 // GetCurrentUser godoc
 // @Summary Get current authenticated user
 // @Description Get current user information based on JWT token
-// @Tags Authentication
+// @Tags Authorization
 // @Accept json
 // @Produce json
 // @Security BackendSecret
@@ -591,7 +591,7 @@ func (h *AuthHandler) updateLastLogin(userID uuid.UUID, clientIP string) error {
 // RequestOTP godoc
 // @Summary Request an OTP code
 // @Description Generate and send an OTP code for email verification or other purposes
-// @Tags Authentication
+// @Tags Authorization
 // @Accept json
 // @Produce json
 // @Security BackendSecret
@@ -751,7 +751,7 @@ func (h *AuthHandler) RequestOTP(c *gin.Context) {
 // VerifyOTP godoc
 // @Summary Verify an OTP code
 // @Description Verify an OTP code for email verification or other purposes
-// @Tags Authentication
+// @Tags Authorization
 // @Accept json
 // @Produce json
 // @Security BackendSecret
@@ -878,7 +878,7 @@ func (h *AuthHandler) VerifyOTP(c *gin.Context) {
 // Logout godoc
 // @Summary Logout user
 // @Description Logout the current user and invalidate session
-// @Tags Authentication
+// @Tags Authorization
 // @Accept json
 // @Produce json
 // @Security BackendSecret
