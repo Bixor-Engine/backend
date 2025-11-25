@@ -57,7 +57,7 @@ func main() {
 func (app *App) initDB() error {
 	databaseURL := os.Getenv("DATABASE_URL")
 	if databaseURL == "" {
-		databaseURL = "postgres://bixor_user:bixor_pass@localhost:5432/bixor?sslmode=disable"
+		log.Fatal("DATABASE_URL environment variable is required. Please create a .env file (copy from .env.example)")
 	}
 
 	var err error

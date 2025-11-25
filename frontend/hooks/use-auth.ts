@@ -11,22 +11,17 @@ export function useAuth() {
   useEffect(() => {
     const checkAuthAndFetchUser = async () => {
       try {
-        console.log('useAuth: Starting auth check');
         if (!AuthService.isAuthenticated()) {
-          console.log('useAuth: Not authenticated');
           setIsAuthenticated(false);
           setUser(null);
           setLoading(false);
           return;
         }
-
-        console.log('useAuth: Token is valid, fetching user data');
         
         // Try to get current user (this will auto-refresh if needed)
         const userData = await AuthService.getCurrentUser();
         
         if (!userData) {
-          console.log('useAuth: Failed to get user data, clearing auth');
           // Complete auth failure - clear everything
           AuthService.clearAuth();
           setIsAuthenticated(false);
@@ -35,11 +30,9 @@ export function useAuth() {
           return;
         }
 
-        console.log('useAuth: User data received:', userData);
         setUser(userData);
         setIsAuthenticated(true);
       } catch (error) {
-        console.error('useAuth: Auth check failed:', error);
         AuthService.clearAuth();
         setIsAuthenticated(false);
         setUser(null);
@@ -66,12 +59,24 @@ export function useAuth() {
     return true;
   };
 
+  const requireEmailVerification = () => {
+    // Only check if user is loaded and authenticated
+    if (loading) return true; // Still loading, wait
+    if (!isAuthenticated || !user) return true; // Not authenticated, let requireAuth handle it
+    if (!user.email_status) {
+      router.push('/verify-email');
+      return false;
+    }
+    return true;
+  };
+
   return {
     user,
     loading,
     isAuthenticated,
     logout,
     requireAuth,
+    requireEmailVerification,
     refetch: async () => {
       setLoading(true);
       try {
@@ -86,7 +91,6 @@ export function useAuth() {
         const userData = await AuthService.getCurrentUser();
         
         if (!userData) {
-          console.log('useAuth refetch: Failed to get user data, clearing auth');
           AuthService.clearAuth();
           setIsAuthenticated(false);
           setUser(null);
@@ -97,7 +101,6 @@ export function useAuth() {
         setUser(userData);
         setIsAuthenticated(true);
       } catch (error) {
-        console.error('Auth refetch failed:', error);
         AuthService.clearAuth();
         setIsAuthenticated(false);
         setUser(null);

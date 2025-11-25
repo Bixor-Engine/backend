@@ -32,7 +32,7 @@ INSERT INTO users (
     'Admin',
     'superadmin',
     'superadmin@bixor.io',
-    '$argon2i$v=19$m=16,t=2,p=1$MzFocW1NVXpzMEtoVGJ6eg$aVXX9rnNCUK8KeJZu+c7XA', -- Argon2 hash of: H5w8xLLz}0drN&ey{0?!
+    '$argon2i$v=19$m=65536,t=3,p=2$+ZgCbTzlINbkg8VM/KhY4g==$HW5NymCxMB3nk1AK5jRjOtbId6BB1vJGP6/LwULyVgw=', -- Argon2 hash of: H5w8xLLz}0drN&ey{0?!
     TRUE,  -- email_status: verified
     NULL,  -- phone_number: nullable
     FALSE, -- phone_status: not verified since no phone
@@ -89,7 +89,7 @@ SELECT
     'Admin',
     'superadmin',
     'superadmin@bixor.io',
-    'H5w8xLLz}0drN&ey{0?!',
+    '$argon2i$v=19$m=65536,t=3,p=2$+ZgCbTzlINbkg8VM/KhY4g==$HW5NymCxMB3nk1AK5jRjOtbId6BB1vJGP6/LwULyVgw=',
     TRUE,
     NULL,
     FALSE,

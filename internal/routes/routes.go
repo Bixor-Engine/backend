@@ -58,6 +58,14 @@ func SetupRoutes(db *sql.DB) *gin.Engine {
 			auth.POST("/login", authHandler.Login)
 			auth.POST("/refresh", authHandler.RefreshToken)
 			auth.GET("/me", authHandler.GetCurrentUser)
+
+			// OTP endpoints (require authentication)
+			otp := auth.Group("/otp")
+			{
+				otp.POST("/request", authHandler.RequestOTP)
+				otp.POST("/verify", authHandler.VerifyOTP)
+			}
+
 			// Future auth endpoints will be added here
 			// auth.POST("/logout", authHandler.Logout)
 			// auth.POST("/forgot-password", authHandler.ForgotPassword)

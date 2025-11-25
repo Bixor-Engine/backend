@@ -45,6 +45,8 @@ export interface AuthResponse {
     refresh_token: string;
     expires_in: number;
   };
+  requires_verify?: boolean;
+  redirect_to?: string;
 }
 
 export class AuthService {
@@ -55,7 +57,6 @@ export class AuthService {
     if (typeof window === 'undefined') return false;
     const token = localStorage.getItem(this.TOKEN_KEY);
     if (!token) {
-      console.log('AuthService: No token found');
       return false;
     }
     
@@ -64,15 +65,8 @@ export class AuthService {
       const payload = JSON.parse(atob(token.split('.')[1]));
       const currentTime = Date.now() / 1000;
       const isValid = payload.exp > currentTime;
-      console.log('AuthService: Token validation:', { 
-        exp: payload.exp, 
-        current: currentTime, 
-        isValid,
-        timeLeft: payload.exp - currentTime 
-      });
       return isValid;
     } catch (error) {
-      console.log('AuthService: Token parsing failed:', error);
       return false;
     }
   }
@@ -85,7 +79,6 @@ export class AuthService {
   static async getCurrentUser(): Promise<User | null> {
     const token = this.getToken();
     if (!token) {
-      console.log('AuthService: No token for getCurrentUser');
       return null;
     }
 
@@ -93,7 +86,6 @@ export class AuthService {
     const fetchUser = async (accessToken: string): Promise<User | null> => {
       try {
         const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
-        console.log('AuthService: Fetching user from', `${apiUrl}/api/v1/auth/me`);
         const response = await fetch(`${apiUrl}/api/v1/auth/me`, {
           method: 'GET',
           headers: {
@@ -103,15 +95,12 @@ export class AuthService {
         });
 
         if (!response.ok) {
-          console.log('AuthService: API responded with error:', response.status, response.statusText);
           return null;
         }
 
         const data = await response.json();
-        console.log('AuthService: User data received:', data);
         return data.user;
       } catch (error) {
-        console.log('AuthService: getCurrentUser fetch failed:', error);
         return null;
       }
     };
@@ -121,13 +110,11 @@ export class AuthService {
     
     // If failed and we have a refresh token, try to refresh and retry
     if (!user && this.getRefreshToken()) {
-      console.log('AuthService: Token might be expired, trying to refresh');
       const refreshSuccess = await this.refreshToken();
       
       if (refreshSuccess) {
         const newToken = this.getToken();
         if (newToken) {
-          console.log('AuthService: Retrying with refreshed token');
           user = await fetchUser(newToken);
         }
       }
@@ -135,7 +122,6 @@ export class AuthService {
 
     // If still failed, clear auth
     if (!user) {
-      console.log('AuthService: Failed to get user data, clearing auth');
       this.clearAuth();
     }
 
@@ -149,16 +135,8 @@ export class AuthService {
 
   static setTokens(accessToken: string, refreshToken: string): void {
     if (typeof window === 'undefined') return;
-    console.log('AuthService: setTokens called with:', {
-      accessToken: accessToken ? 'present' : 'missing',
-      refreshToken: refreshToken ? 'present' : 'missing'
-    });
     localStorage.setItem(this.TOKEN_KEY, accessToken);
     localStorage.setItem(this.REFRESH_TOKEN_KEY, refreshToken);
-    console.log('AuthService: Tokens stored. Verification:', {
-      auth_token: localStorage.getItem(this.TOKEN_KEY) ? 'stored' : 'not stored',
-      refresh_token: localStorage.getItem(this.REFRESH_TOKEN_KEY) ? 'stored' : 'not stored'
-    });
   }
 
   static clearAuth(): void {
@@ -169,7 +147,6 @@ export class AuthService {
 
   static async login(email: string, password: string): Promise<AuthResponse> {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
-    console.log('AuthService: Attempting login to', `${apiUrl}/api/v1/auth/login`);
     
     const response = await fetch(`${apiUrl}/api/v1/auth/login`, {
       method: 'POST',
@@ -180,7 +157,6 @@ export class AuthService {
     });
 
     const data = await response.json();
-    console.log('AuthService: Login response:', data);
 
     if (!response.ok) {
       throw new Error(data.message || 'Login failed');
@@ -188,10 +164,8 @@ export class AuthService {
 
     // Only store the access token from tokens object
     if (data.tokens && data.tokens.access_token && data.tokens.refresh_token) {
-      console.log('AuthService: Storing access and refresh tokens');
       this.setTokens(data.tokens.access_token, data.tokens.refresh_token);
     } else {
-      console.log('AuthService: No tokens in response:', data);
       throw new Error('No tokens received');
     }
 
@@ -221,13 +195,11 @@ export class AuthService {
   static async refreshToken(): Promise<boolean> {
     const refreshToken = this.getRefreshToken();
     if (!refreshToken) {
-      console.log('AuthService: No refresh token available');
       return false;
     }
 
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
-      console.log('AuthService: Attempting to refresh token');
       
       const response = await fetch(`${apiUrl}/api/v1/auth/refresh`, {
         method: 'POST',
@@ -238,25 +210,20 @@ export class AuthService {
       });
 
       if (!response.ok) {
-        console.log('AuthService: Token refresh failed:', response.status);
         this.clearAuth();
         return false;
       }
 
       const data = await response.json();
-      console.log('AuthService: Token refresh response:', data);
 
       if (data.tokens && data.tokens.access_token && data.tokens.refresh_token) {
-        console.log('AuthService: Storing new tokens after refresh');
         this.setTokens(data.tokens.access_token, data.tokens.refresh_token);
         return true;
       } else {
-        console.log('AuthService: No tokens in refresh response');
         this.clearAuth();
         return false;
       }
     } catch (error) {
-      console.log('AuthService: Token refresh error:', error);
       this.clearAuth();
       return false;
     }
@@ -289,10 +256,59 @@ export class AuthService {
     }
 
     if (this.isTokenExpiringSoon()) {
-      console.log('AuthService: Token expiring soon, refreshing...');
       return await this.refreshToken();
     }
 
     return true;
+  }
+
+  static async requestOTP(type: 'email-verification' | 'password-reset' | '2fa' | 'phone-verification'): Promise<{ message: string; expires_in: number }> {
+    const token = this.getToken();
+    if (!token) {
+      throw new Error('Not authenticated');
+    }
+
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
+    const response = await fetch(`${apiUrl}/api/v1/auth/otp/request`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify({ type }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Failed to request OTP');
+    }
+
+    return data;
+  }
+
+  static async verifyOTP(type: 'email-verification' | 'password-reset' | '2fa' | 'phone-verification', code: string): Promise<{ message: string; verified: boolean }> {
+    const token = this.getToken();
+    if (!token) {
+      throw new Error('Not authenticated');
+    }
+
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
+    const response = await fetch(`${apiUrl}/api/v1/auth/otp/verify`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify({ type, code }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Failed to verify OTP');
+    }
+
+    return data;
   }
 }

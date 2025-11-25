@@ -25,7 +25,7 @@ export default function SignIn() {
     setError('');
     
     try {
-      await AuthService.login(email, password);
+      const response = await AuthService.login(email, password);
       
       // Show success toast
       toast.success("Welcome back!", {
@@ -33,8 +33,16 @@ export default function SignIn() {
         duration: 4000
       });
       
-      // Redirect to wallets
-      router.push('/wallets');
+      // Small delay to ensure tokens are stored
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      // Check if email verification is required
+      if (response.requires_verify && response.redirect_to) {
+        router.push(response.redirect_to);
+      } else {
+        // Redirect to wallets if already verified
+        router.push('/wallets');
+      }
     } catch (err: unknown) {
       if (err instanceof Error) {
         setError(err.message);

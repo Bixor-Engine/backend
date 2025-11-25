@@ -24,12 +24,13 @@ import {
 import { toast } from "sonner";
 
 export default function Wallets() {
-  const { user, loading, requireAuth } = useAuth();
+  const { user, loading, requireAuth, requireEmailVerification } = useAuth();
   const [showBalances, setShowBalances] = useState(true);
 
   useEffect(() => {
-    requireAuth();
-  }, [requireAuth]);
+    if (!requireAuth()) return;
+    requireEmailVerification();
+  }, [requireAuth, requireEmailVerification]);
 
   if (loading) {
     return (

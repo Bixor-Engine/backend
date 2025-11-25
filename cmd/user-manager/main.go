@@ -44,7 +44,8 @@ func connectDB() *sql.DB {
 
 	databaseURL := os.Getenv("DATABASE_URL")
 	if databaseURL == "" {
-		databaseURL = "postgres://bixor_user:bixor_pass@localhost:5432/bixor?sslmode=disable"
+		logError("DATABASE_URL environment variable is required. Please create a .env file (copy from .env.example)")
+		os.Exit(1)
 	}
 
 	db, err := sql.Open("postgres", databaseURL)

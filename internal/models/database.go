@@ -129,12 +129,37 @@ type LoginRequest struct {
 
 // LoginResponse represents the response payload for successful login
 type LoginResponse struct {
-	Message string       `json:"message"`
-	User    UserResponse `json:"user"`
-	Tokens  JWTTokens    `json:"tokens"`
+	Message        string       `json:"message"`
+	User           UserResponse `json:"user"`
+	Tokens         JWTTokens    `json:"tokens"`
+	RequiresVerify bool         `json:"requires_verify"`       // True if user needs to verify email
+	RedirectTo     string       `json:"redirect_to,omitempty"` // Where to redirect (e.g., "/verify-email")
 }
 
 // RefreshTokenRequest represents the request payload for token refresh
 type RefreshTokenRequest struct {
 	RefreshToken string `json:"refresh_token" binding:"required"`
+}
+
+// OTP represents a one-time password record
+type OTP struct {
+	ID        uuid.UUID `json:"id" db:"id"`
+	UserID    uuid.UUID `json:"user_id" db:"user_id"`
+	Type      string    `json:"type" db:"type"` // e.g., 'email-verification', 'password-reset', '2fa'
+	Code      string    `json:"code" db:"code"` // 6-digit code
+	Used      bool      `json:"used" db:"used"`
+	ExpiresAt time.Time `json:"expires_at" db:"expires_at"`
+	CreatedAt time.Time `json:"created_at" db:"created_at"`
+	UpdatedAt time.Time `json:"updated_at" db:"updated_at"`
+}
+
+// RequestOTPRequest represents the request payload for requesting an OTP
+type RequestOTPRequest struct {
+	Type string `json:"type" binding:"required,oneof=email-verification password-reset 2fa phone-verification"`
+}
+
+// VerifyOTPRequest represents the request payload for verifying an OTP
+type VerifyOTPRequest struct {
+	Type string `json:"type" binding:"required,oneof=email-verification password-reset 2fa phone-verification"`
+	Code string `json:"code" binding:"required,len=6,numeric"`
 }

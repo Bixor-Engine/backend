@@ -47,6 +47,9 @@ JWT_EXPIRES_HOURS=24
 ### 3. Install and Setup
 
 ```bash
+# Download Go dependencies
+go mod download
+
 # Install CLI tool
 go install ./cmd/bixor
 
