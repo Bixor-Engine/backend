@@ -163,3 +163,17 @@ type VerifyOTPRequest struct {
 	Type string `json:"type" binding:"required,oneof=email-verification password-reset 2fa phone-verification"`
 	Code string `json:"code" binding:"required,len=6,numeric"`
 }
+
+// RequestOTPResponse represents the response for requesting an OTP
+type RequestOTPResponse struct {
+	Message   string `json:"message"`
+	ExpiresIn int    `json:"expires_in"`         // Expiration time in seconds
+	OTPCode   string `json:"otp_code,omitempty"` // Only included in development mode when SMTP is disabled
+	Error     string `json:"error,omitempty"`    // Only included if email sending failed
+}
+
+// VerifyOTPResponse represents the response for verifying an OTP
+type VerifyOTPResponse struct {
+	Message  string `json:"message"`
+	Verified bool   `json:"verified"`
+}

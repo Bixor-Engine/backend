@@ -592,8 +592,8 @@ func (h *AuthHandler) updateLastLogin(userID uuid.UUID, clientIP string) error {
 // @Produce json
 // @Security BearerAuth
 // @Param request body models.RequestOTPRequest true "OTP request data"
-// @Success 200 {object} map[string]interface{} "OTP sent successfully"
-// @Failure 400 {object} map[string]interface{} "Bad request - validation errors"
+// @Success 200 {object} models.RequestOTPResponse "OTP sent successfully"
+// @Failure 400 {object} map[string]interface{} "Bad request - validation errors or email already verified"
 // @Failure 401 {object} map[string]interface{} "Unauthorized - invalid or missing token"
 // @Failure 500 {object} map[string]interface{} "Internal server error"
 // @Router /api/v1/auth/otp/request [post]
@@ -751,10 +751,10 @@ func (h *AuthHandler) RequestOTP(c *gin.Context) {
 // @Produce json
 // @Security BearerAuth
 // @Param request body models.VerifyOTPRequest true "OTP verification data"
-// @Success 200 {object} map[string]interface{} "OTP verified successfully"
-// @Failure 400 {object} map[string]interface{} "Bad request - validation errors"
+// @Success 200 {object} models.VerifyOTPResponse "OTP verified successfully"
+// @Failure 400 {object} map[string]interface{} "Bad request - validation errors, invalid code, or expired OTP"
 // @Failure 401 {object} map[string]interface{} "Unauthorized - invalid or missing token"
-// @Failure 404 {object} map[string]interface{} "OTP not found or expired"
+// @Failure 404 {object} map[string]interface{} "OTP not found"
 // @Failure 500 {object} map[string]interface{} "Internal server error"
 // @Router /api/v1/auth/otp/verify [post]
 func (h *AuthHandler) VerifyOTP(c *gin.Context) {

@@ -53,6 +53,12 @@ definitions:
     properties:
       message:
         type: string
+      redirect_to:
+        description: Where to redirect (e.g., "/verify-email")
+        type: string
+      requires_verify:
+        description: True if user needs to verify email
+        type: boolean
       tokens:
         $ref: '#/definitions/models.JWTTokens'
       user:
@@ -107,6 +113,32 @@ definitions:
     - password
     - username
     type: object
+  models.RequestOTPRequest:
+    properties:
+      type:
+        enum:
+        - email-verification
+        - password-reset
+        - 2fa
+        - phone-verification
+        type: string
+    required:
+    - type
+    type: object
+  models.RequestOTPResponse:
+    properties:
+      error:
+        description: Only included if email sending failed
+        type: string
+      expires_in:
+        description: Expiration time in seconds
+        type: integer
+      message:
+        type: string
+      otp_code:
+        description: Only included in development mode when SMTP is disabled
+        type: string
+    type: object
   models.UserResponse:
     properties:
       address:
@@ -149,6 +181,28 @@ definitions:
         type: string
       username:
         type: string
+    type: object
+  models.VerifyOTPRequest:
+    properties:
+      code:
+        type: string
+      type:
+        enum:
+        - email-verification
+        - password-reset
+        - 2fa
+        - phone-verification
+        type: string
+    required:
+    - code
+    - type
+    type: object
+  models.VerifyOTPResponse:
+    properties:
+      message:
+        type: string
+      verified:
+        type: boolean
     type: object
 host: localhost:8080
 info:
@@ -213,6 +267,121 @@ paths:
             additionalProperties: true
             type: object
       summary: User login
+      tags:
+      - Authentication
+  /api/v1/auth/me:
+    get:
+      consumes:
+      - application/json
+      description: Get current user information based on JWT token
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Current user data
+          schema:
+            $ref: '#/definitions/models.UserResponse'
+        "401":
+          description: Unauthorized - invalid or missing token
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: User not found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get current authenticated user
+      tags:
+      - Authentication
+  /api/v1/auth/otp/request:
+    post:
+      consumes:
+      - application/json
+      description: Generate and send an OTP code for email verification or other purposes
+      parameters:
+      - description: OTP request data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.RequestOTPRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OTP sent successfully
+          schema:
+            $ref: '#/definitions/models.RequestOTPResponse'
+        "400":
+          description: Bad request - validation errors or email already verified
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized - invalid or missing token
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Request an OTP code
+      tags:
+      - Authentication
+  /api/v1/auth/otp/verify:
+    post:
+      consumes:
+      - application/json
+      description: Verify an OTP code for email verification or other purposes
+      parameters:
+      - description: OTP verification data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.VerifyOTPRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OTP verified successfully
+          schema:
+            $ref: '#/definitions/models.VerifyOTPResponse'
+        "400":
+          description: Bad request - validation errors, invalid code, or expired OTP
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized - invalid or missing token
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: OTP not found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Verify an OTP code
       tags:
       - Authentication
   /api/v1/auth/refresh:
@@ -354,4 +523,10 @@ paths:
 schemes:
 - http
 - https
+securityDefinitions:
+  BearerAuth:
+    description: Type "Bearer" followed by a space and JWT token.
+    in: header
+    name: Authorization
+    type: apiKey
 swagger: "2.0"
