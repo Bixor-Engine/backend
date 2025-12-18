@@ -75,7 +75,8 @@ export interface ToggleTwoFARequest {
 }
 
 export class AuthService {
-  private static readonly TOKEN_KEY = 'auth_token';
+  // Store access token in memory only (never in storage)
+  private static accessToken: string | null = null;
   private static readonly REFRESH_TOKEN_KEY = 'refresh_token';
 
   // Get default headers (no backend secret needed - handled by Next.js API routes)
@@ -90,7 +91,7 @@ export class AuthService {
 
   static isAuthenticated(): boolean {
     if (typeof window === 'undefined') return false;
-    const token = localStorage.getItem(this.TOKEN_KEY);
+    const token = this.accessToken;
     if (!token) {
       return false;
     }
@@ -108,7 +109,7 @@ export class AuthService {
 
   static getToken(): string | null {
     if (typeof window === 'undefined') return null;
-    return localStorage.getItem(this.TOKEN_KEY);
+    return this.accessToken;
   }
 
   static async getCurrentUser(): Promise<User | null> {
@@ -163,19 +164,23 @@ export class AuthService {
 
   static getRefreshToken(): string | null {
     if (typeof window === 'undefined') return null;
-    return localStorage.getItem(this.REFRESH_TOKEN_KEY);
+    return sessionStorage.getItem(this.REFRESH_TOKEN_KEY);
   }
 
   static setTokens(accessToken: string, refreshToken: string): void {
     if (typeof window === 'undefined') return;
-    localStorage.setItem(this.TOKEN_KEY, accessToken);
-    localStorage.setItem(this.REFRESH_TOKEN_KEY, refreshToken);
+    // Store access token in memory only
+    this.accessToken = accessToken;
+    // Store refresh token in sessionStorage (cleared on browser close)
+    sessionStorage.setItem(this.REFRESH_TOKEN_KEY, refreshToken);
   }
 
   static clearAuth(): void {
     if (typeof window === 'undefined') return;
-    localStorage.removeItem(this.TOKEN_KEY);
-    localStorage.removeItem(this.REFRESH_TOKEN_KEY);
+    // Clear in-memory access token
+    this.accessToken = null;
+    // Clear refresh token from sessionStorage
+    sessionStorage.removeItem(this.REFRESH_TOKEN_KEY);
   }
 
   static async login(email: string, password: string): Promise<AuthResponse> {
@@ -278,7 +283,7 @@ export class AuthService {
 
   static isTokenExpiringSoon(): boolean {
     if (typeof window === 'undefined') return false;
-    const token = localStorage.getItem(this.TOKEN_KEY);
+    const token = this.accessToken;
     if (!token) return false;
 
     try {

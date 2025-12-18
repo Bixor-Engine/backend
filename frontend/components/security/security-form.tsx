@@ -1,5 +1,3 @@
-'use client';
-
 import * as React from 'react';
 import { useState, useEffect } from 'react';
 import { AuthService, User, ChangePasswordRequest, ToggleTwoFARequest } from '@/lib/auth';
@@ -11,6 +9,7 @@ import { Switch } from '@/components/ui/switch';
 import { AlertCircle, CheckCircle2, Shield, Lock, Smartphone } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
+import { PasswordStrength } from '@/components/ui/password-strength';
 
 export function SecurityForm() {
     const [user, setUser] = useState<User | null>(null);
@@ -110,6 +109,7 @@ function ChangePasswordSection() {
                             required
                             minLength={8}
                         />
+                        <PasswordStrength password={formData.new_password} />
                     </div>
                     <Button type="submit" disabled={saving}>
                         {saving ? 'Updating...' : 'Update Password'}
