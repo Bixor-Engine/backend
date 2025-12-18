@@ -103,27 +103,28 @@ func (h *AuthHandler) Register(c *gin.Context) {
 
 	// Create user in database
 	user := &models.User{
-		ID:           uuid.New(),
-		FirstName:    req.FirstName,
-		LastName:     req.LastName,
-		Username:     strings.ToLower(strings.TrimSpace(req.Username)),
-		Email:        strings.ToLower(strings.TrimSpace(req.Email)),
-		Password:     hashedPassword,
-		EmailStatus:  false, // Email verification required
-		PhoneNumber:  req.PhoneNumber,
-		PhoneStatus:  false, // Phone verification required
-		ReferredBy:   referredByUUID,
-		Address:      req.Address,
-		City:         req.City,
-		Country:      req.Country,
-		Role:         "user",          // Default role
-		Status:       "pending",       // Default status
-		KYCStatus:    "not_submitted", // Default KYC status
-		TwoFAEnabled: false,           // 2FA disabled by default
-		Language:     language,
-		Timezone:     timezone,
-		CreatedAt:    time.Now(),
-		UpdatedAt:    time.Now(),
+		ID:            uuid.New(),
+		FirstName:     req.FirstName,
+		LastName:      req.LastName,
+		Username:      strings.ToLower(strings.TrimSpace(req.Username)),
+		Email:         strings.ToLower(strings.TrimSpace(req.Email)),
+		Password:      hashedPassword,
+		EmailStatus:   false, // Email verification required
+		PhoneNumber:   req.PhoneNumber,
+		PhoneStatus:   false, // Phone verification required
+		ReferredBy:    referredByUUID,
+		Address:       req.Address,
+		City:          req.City,
+		Country:       req.Country,
+		Role:          "user",          // Default role
+		Status:        "pending",       // Default status
+		KYCStatus:     "not_submitted", // Default KYC status
+		TwoFAEnabled:  false,           // 2FA disabled by default
+		Language:      language,
+		Timezone:      timezone,
+		GlobalBalance: 0.00,
+		CreatedAt:     time.Now(),
+		UpdatedAt:     time.Now(),
 	}
 
 	// Insert user into database
@@ -137,25 +138,26 @@ func (h *AuthHandler) Register(c *gin.Context) {
 
 	// Create response (excluding sensitive data)
 	userResponse := models.UserResponse{
-		ID:           user.ID,
-		FirstName:    user.FirstName,
-		LastName:     user.LastName,
-		Username:     user.Username,
-		Email:        user.Email,
-		EmailStatus:  user.EmailStatus,
-		PhoneNumber:  user.PhoneNumber,
-		PhoneStatus:  user.PhoneStatus,
-		Address:      user.Address,
-		City:         user.City,
-		Country:      user.Country,
-		Role:         user.Role,
-		Status:       user.Status,
-		KYCStatus:    user.KYCStatus,
-		TwoFAEnabled: user.TwoFAEnabled,
-		Language:     user.Language,
-		Timezone:     user.Timezone,
-		CreatedAt:    user.CreatedAt,
-		UpdatedAt:    user.UpdatedAt,
+		ID:            user.ID,
+		FirstName:     user.FirstName,
+		LastName:      user.LastName,
+		Username:      user.Username,
+		Email:         user.Email,
+		EmailStatus:   user.EmailStatus,
+		PhoneNumber:   user.PhoneNumber,
+		PhoneStatus:   user.PhoneStatus,
+		Address:       user.Address,
+		City:          user.City,
+		Country:       user.Country,
+		Role:          user.Role,
+		Status:        user.Status,
+		KYCStatus:     user.KYCStatus,
+		TwoFAEnabled:  user.TwoFAEnabled,
+		Language:      user.Language,
+		Timezone:      user.Timezone,
+		GlobalBalance: user.GlobalBalance,
+		CreatedAt:     user.CreatedAt,
+		UpdatedAt:     user.UpdatedAt,
 	}
 
 	c.JSON(http.StatusCreated, gin.H{
@@ -257,26 +259,27 @@ func (h *AuthHandler) Login(c *gin.Context) {
 
 	// Create user response (excluding sensitive data)
 	userResponse := models.UserResponse{
-		ID:           user.ID,
-		FirstName:    user.FirstName,
-		LastName:     user.LastName,
-		Username:     user.Username,
-		Email:        user.Email,
-		EmailStatus:  user.EmailStatus,
-		PhoneNumber:  user.PhoneNumber,
-		PhoneStatus:  user.PhoneStatus,
-		Address:      user.Address,
-		City:         user.City,
-		Country:      user.Country,
-		Role:         user.Role,
-		Status:       user.Status,
-		KYCStatus:    user.KYCStatus,
-		TwoFAEnabled: user.TwoFAEnabled,
-		LastLoginAt:  user.LastLoginAt,
-		Language:     user.Language,
-		Timezone:     user.Timezone,
-		CreatedAt:    user.CreatedAt,
-		UpdatedAt:    user.UpdatedAt,
+		ID:            user.ID,
+		FirstName:     user.FirstName,
+		LastName:      user.LastName,
+		Username:      user.Username,
+		Email:         user.Email,
+		EmailStatus:   user.EmailStatus,
+		PhoneNumber:   user.PhoneNumber,
+		PhoneStatus:   user.PhoneStatus,
+		Address:       user.Address,
+		City:          user.City,
+		Country:       user.Country,
+		Role:          user.Role,
+		Status:        user.Status,
+		KYCStatus:     user.KYCStatus,
+		TwoFAEnabled:  user.TwoFAEnabled,
+		LastLoginAt:   user.LastLoginAt,
+		Language:      user.Language,
+		Timezone:      user.Timezone,
+		GlobalBalance: user.GlobalBalance,
+		CreatedAt:     user.CreatedAt,
+		UpdatedAt:     user.UpdatedAt,
 	}
 
 	// Create login response with redirect info
@@ -450,26 +453,27 @@ func (h *AuthHandler) GetCurrentUser(c *gin.Context) {
 
 	// Create response
 	userResponse := models.UserResponse{
-		ID:           user.ID,
-		FirstName:    user.FirstName,
-		LastName:     user.LastName,
-		Username:     user.Username,
-		Email:        user.Email,
-		EmailStatus:  user.EmailStatus,
-		PhoneNumber:  user.PhoneNumber,
-		PhoneStatus:  user.PhoneStatus,
-		Address:      user.Address,
-		City:         user.City,
-		Country:      user.Country,
-		Role:         user.Role,
-		Status:       user.Status,
-		KYCStatus:    user.KYCStatus,
-		TwoFAEnabled: user.TwoFAEnabled,
-		LastLoginAt:  user.LastLoginAt,
-		Language:     user.Language,
-		Timezone:     user.Timezone,
-		CreatedAt:    user.CreatedAt,
-		UpdatedAt:    user.UpdatedAt,
+		ID:            user.ID,
+		FirstName:     user.FirstName,
+		LastName:      user.LastName,
+		Username:      user.Username,
+		Email:         user.Email,
+		EmailStatus:   user.EmailStatus,
+		PhoneNumber:   user.PhoneNumber,
+		PhoneStatus:   user.PhoneStatus,
+		Address:       user.Address,
+		City:          user.City,
+		Country:       user.Country,
+		Role:          user.Role,
+		Status:        user.Status,
+		KYCStatus:     user.KYCStatus,
+		TwoFAEnabled:  user.TwoFAEnabled,
+		LastLoginAt:   user.LastLoginAt,
+		Language:      user.Language,
+		Timezone:      user.Timezone,
+		GlobalBalance: user.GlobalBalance,
+		CreatedAt:     user.CreatedAt,
+		UpdatedAt:     user.UpdatedAt,
 	}
 
 	c.JSON(http.StatusOK, gin.H{
@@ -503,10 +507,10 @@ func (h *AuthHandler) createUser(user *models.User) error {
 			id, first_name, last_name, username, email, password,
 			email_status, phone_number, phone_status, referred_by,
 			address, city, country, role, status, kyc_status,
-			twofa_enabled, language, timezone, created_at, updated_at
+			twofa_enabled, language, timezone, global_balance, created_at, updated_at
 		) VALUES (
 			$1, $2, $3, $4, $5, $6, $7, $8, $9, $10,
-			$11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21
+			$11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22
 		)
 	`
 
@@ -514,7 +518,7 @@ func (h *AuthHandler) createUser(user *models.User) error {
 		user.ID, user.FirstName, user.LastName, user.Username, user.Email, user.Password,
 		user.EmailStatus, user.PhoneNumber, user.PhoneStatus, user.ReferredBy,
 		user.Address, user.City, user.Country, user.Role, user.Status, user.KYCStatus,
-		user.TwoFAEnabled, user.Language, user.Timezone, user.CreatedAt, user.UpdatedAt,
+		user.TwoFAEnabled, user.Language, user.Timezone, user.GlobalBalance, user.CreatedAt, user.UpdatedAt,
 	)
 
 	return err
@@ -528,7 +532,7 @@ func (h *AuthHandler) getUserByEmail(email string) (*models.User, error) {
 			   email_status, phone_number, phone_status, referred_by,
 			   address, city, country, role, status, kyc_status,
 			   twofa_enabled, last_login_at, last_login_ip, device_info,
-			   language, timezone, created_at, updated_at, deleted_at
+			   language, timezone, global_balance, created_at, updated_at, deleted_at
 		FROM users 
 		WHERE LOWER(email) = LOWER($1) AND deleted_at IS NULL
 	`
@@ -538,7 +542,7 @@ func (h *AuthHandler) getUserByEmail(email string) (*models.User, error) {
 		&user.EmailStatus, &user.PhoneNumber, &user.PhoneStatus, &user.ReferredBy,
 		&user.Address, &user.City, &user.Country, &user.Role, &user.Status, &user.KYCStatus,
 		&user.TwoFAEnabled, &user.LastLoginAt, &user.LastLoginIP, &user.DeviceInfo,
-		&user.Language, &user.Timezone, &user.CreatedAt, &user.UpdatedAt, &user.DeletedAt,
+		&user.Language, &user.Timezone, &user.GlobalBalance, &user.CreatedAt, &user.UpdatedAt, &user.DeletedAt,
 	)
 
 	if err != nil {
@@ -556,7 +560,7 @@ func (h *AuthHandler) getUserByID(userID uuid.UUID) (*models.User, error) {
 			   email_status, phone_number, phone_status, referred_by,
 			   address, city, country, role, status, kyc_status,
 			   twofa_enabled, last_login_at, last_login_ip, device_info,
-			   language, timezone, created_at, updated_at, deleted_at
+			   language, timezone, global_balance, created_at, updated_at, deleted_at
 		FROM users 
 		WHERE id = $1 AND deleted_at IS NULL
 	`
@@ -566,7 +570,7 @@ func (h *AuthHandler) getUserByID(userID uuid.UUID) (*models.User, error) {
 		&user.EmailStatus, &user.PhoneNumber, &user.PhoneStatus, &user.ReferredBy,
 		&user.Address, &user.City, &user.Country, &user.Role, &user.Status, &user.KYCStatus,
 		&user.TwoFAEnabled, &user.LastLoginAt, &user.LastLoginIP, &user.DeviceInfo,
-		&user.Language, &user.Timezone, &user.CreatedAt, &user.UpdatedAt, &user.DeletedAt,
+		&user.Language, &user.Timezone, &user.GlobalBalance, &user.CreatedAt, &user.UpdatedAt, &user.DeletedAt,
 	)
 
 	if err != nil {

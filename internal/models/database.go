@@ -50,6 +50,7 @@ type User struct {
 	DeviceInfo   *string    `json:"device_info,omitempty" db:"device_info"` // JSONB as string
 	Language     string     `json:"language" db:"language"`
 	Timezone     string     `json:"timezone" db:"timezone"`
+	GlobalBalance float64   `json:"global_balance" db:"global_balance"`
 	CreatedAt    time.Time  `json:"created_at" db:"created_at"`
 	UpdatedAt    time.Time  `json:"updated_at" db:"updated_at"`
 	DeletedAt    *time.Time `json:"deleted_at,omitempty" db:"deleted_at"`
@@ -91,6 +92,7 @@ type UserResponse struct {
 	LastLoginAt  *time.Time `json:"last_login_at,omitempty"`
 	Language     string     `json:"language"`
 	Timezone     string     `json:"timezone"`
+	GlobalBalance float64   `json:"global_balance"`
 	CreatedAt    time.Time  `json:"created_at"`
 	UpdatedAt    time.Time  `json:"updated_at"`
 }

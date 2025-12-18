@@ -17,6 +17,7 @@ export interface User {
   last_login_at?: string;
   language: string;
   timezone: string;
+  global_balance: number;
   created_at: string;
   updated_at: string;
 }
@@ -52,14 +53,14 @@ export interface AuthResponse {
 export class AuthService {
   private static readonly TOKEN_KEY = 'auth_token';
   private static readonly REFRESH_TOKEN_KEY = 'refresh_token';
-  
+
   // Get default headers (no backend secret needed - handled by Next.js API routes)
   private static getDefaultHeaders(additionalHeaders?: Record<string, string>): HeadersInit {
     const headers: HeadersInit = {
       'Content-Type': 'application/json',
       ...additionalHeaders,
     };
-    
+
     return headers;
   }
 
@@ -69,7 +70,7 @@ export class AuthService {
     if (!token) {
       return false;
     }
-    
+
     // Check if token is expired
     try {
       const payload = JSON.parse(atob(token.split('.')[1]));
@@ -115,11 +116,11 @@ export class AuthService {
 
     // Try with current token
     let user = await fetchUser(token);
-    
+
     // If failed and we have a refresh token, try to refresh and retry
     if (!user && this.getRefreshToken()) {
       const refreshSuccess = await this.refreshToken();
-      
+
       if (refreshSuccess) {
         const newToken = this.getToken();
         if (newToken) {
@@ -228,7 +229,7 @@ export class AuthService {
 
   static async logout(): Promise<void> {
     const token = this.getToken();
-    
+
     // Try to call backend logout endpoint (optional - will still clear local tokens if it fails)
     if (token) {
       try {
@@ -246,7 +247,7 @@ export class AuthService {
         // Ignore errors - still clear local tokens
       }
     }
-    
+
     // Always clear local tokens
     this.clearAuth();
   }
@@ -255,12 +256,12 @@ export class AuthService {
     if (typeof window === 'undefined') return false;
     const token = localStorage.getItem(this.TOKEN_KEY);
     if (!token) return false;
-    
+
     try {
       const payload = JSON.parse(atob(token.split('.')[1]));
       const currentTime = Date.now() / 1000;
       const timeUntilExpiry = payload.exp - currentTime;
-      
+
       // Return true if token expires in less than 5 minutes (300 seconds)
       return timeUntilExpiry < 300;
     } catch {
