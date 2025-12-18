@@ -129,6 +129,17 @@ func SetupRoutes(db *sql.DB) *gin.Engine {
 				// Logout endpoint (requires JWT token)
 				auth.POST("/logout", authHandler.Logout)
 
+				// Profile management
+				auth.POST("/profile/update", authHandler.UpdateProfile)
+				auth.POST("/settings/update", authHandler.UpdateSettings)
+
+				// Security management
+				security := auth.Group("/security")
+				{
+					security.POST("/password", authHandler.ChangePassword)
+					security.POST("/2fa", authHandler.ToggleTwoFA)
+				}
+
 				// Future auth endpoints will be added here
 				// auth.POST("/forgot-password", authHandler.ForgotPassword)
 			}

@@ -50,6 +50,30 @@ export interface AuthResponse {
   redirect_to?: string;
 }
 
+export interface UpdateProfileRequest {
+  first_name: string;
+  last_name: string;
+  phone_number?: string;
+  address?: string;
+  city?: string;
+  country?: string;
+}
+
+export interface UpdateSettingsRequest {
+  language: string;
+  timezone: string;
+}
+
+export interface ChangePasswordRequest {
+  current_password: string;
+  new_password: string;
+}
+
+export interface ToggleTwoFARequest {
+  enable: boolean;
+  code: string;
+}
+
 export class AuthService {
   private static readonly TOKEN_KEY = 'auth_token';
   private static readonly REFRESH_TOKEN_KEY = 'refresh_token';
@@ -322,6 +346,90 @@ export class AuthService {
 
     if (!response.ok) {
       throw new Error(data.message || 'Failed to verify OTP');
+    }
+
+    return data;
+  }
+
+  static async updateProfile(profileData: UpdateProfileRequest): Promise<AuthResponse> {
+    const token = this.getToken();
+    if (!token) throw new Error('Not authenticated');
+
+    const response = await fetch('/api/auth/profile/update', {
+      method: 'POST',
+      headers: this.getDefaultHeaders({
+        'Authorization': `Bearer ${token}`,
+      }),
+      body: JSON.stringify(profileData),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Update failed');
+    }
+
+    return data;
+  }
+
+  static async updateSettings(settingsData: UpdateSettingsRequest): Promise<AuthResponse> {
+    const token = this.getToken();
+    if (!token) throw new Error('Not authenticated');
+
+    const response = await fetch('/api/auth/settings/update', {
+      method: 'POST',
+      headers: this.getDefaultHeaders({
+        'Authorization': `Bearer ${token}`,
+      }),
+      body: JSON.stringify(settingsData),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Update failed');
+    }
+
+    return data;
+  }
+
+  static async changePassword(passwordData: ChangePasswordRequest): Promise<{ message: string }> {
+    const token = this.getToken();
+    if (!token) throw new Error('Not authenticated');
+
+    const response = await fetch('/api/auth/security/password', {
+      method: 'POST',
+      headers: this.getDefaultHeaders({
+        'Authorization': `Bearer ${token}`,
+      }),
+      body: JSON.stringify(passwordData),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Password change failed');
+    }
+
+    return data;
+  }
+
+  static async toggleTwoFA(twoFAData: ToggleTwoFARequest): Promise<AuthResponse> {
+    const token = this.getToken();
+    if (!token) throw new Error('Not authenticated');
+
+    const response = await fetch('/api/auth/security/2fa', {
+      method: 'POST',
+      headers: this.getDefaultHeaders({
+        'Authorization': `Bearer ${token}`,
+      }),
+      body: JSON.stringify(twoFAData),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || '2FA toggle failed');
     }
 
     return data;
