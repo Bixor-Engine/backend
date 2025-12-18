@@ -36,8 +36,11 @@ type App struct {
 func main() {
 	// Load environment variables
 	if err := godotenv.Load(); err != nil {
-		log.Println("No .env file found")
+		log.Printf("Error loading .env file: %v\n", err)
 	}
+
+	dir, _ := os.Getwd()
+	log.Printf("Current working directory: %s\n", dir)
 
 	app := &App{}
 
