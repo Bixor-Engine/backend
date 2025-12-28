@@ -109,12 +109,12 @@ export default function Wallets() {
                       className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
                     >
                       <div className="flex items-center space-x-4">
-                        <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center overflow-hidden flex-shrink-0">
+                        <div className="flex items-center justify-center flex-shrink-0 w-8 h-8">
                           {wallet.coin_logo ? (
                             <img
                               src={wallet.coin_logo}
                               alt={wallet.coin_ticker}
-                              className="h-6 w-6 object-contain"
+                              className="h-full w-full object-contain"
                               onError={(e) => {
                                 // Fallback if image fails to load
                                 (e.target as HTMLImageElement).src = '';
@@ -122,7 +122,7 @@ export default function Wallets() {
                               }}
                             />
                           ) : (
-                            <DollarSign className="h-5 w-5 text-primary" />
+                            <DollarSign className="h-6 w-6 text-primary" />
                           )}
                         </div>
                         <div>
