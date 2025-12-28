@@ -98,61 +98,55 @@ export default function Wallets() {
                 <CardDescription>Manage your cryptocurrency balances</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                {wallets.length === 0 ? (
-                  <div className="text-center py-8 text-muted-foreground">
-                    No wallets found. Create one to get started.
-                  </div>
-                ) : (
-                  wallets.map((wallet) => (
-                    <div
-                      key={wallet.id || wallet.coin_ticker}
-                      className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
-                    >
-                      <div className="flex items-center space-x-4">
-                        <div className="flex items-center justify-center flex-shrink-0 w-8 h-8">
-                          {wallet.coin_logo ? (
-                            <img
-                              src={wallet.coin_logo}
-                              alt={wallet.coin_ticker}
-                              className="h-full w-full object-contain"
-                              onError={(e) => {
-                                // Fallback if image fails to load
-                                (e.target as HTMLImageElement).src = '';
-                                (e.target as HTMLImageElement).className = 'hidden';
-                              }}
-                            />
-                          ) : (
-                            <DollarSign className="h-6 w-6 text-primary" />
-                          )}
-                        </div>
-                        <div>
-                          <div className="flex items-center space-x-2">
-                            <h3 className="font-medium">{wallet.coin_name}</h3>
-                            <Badge variant="secondary">{wallet.coin_ticker}</Badge>
-                          </div>
-                          <p className="text-sm text-muted-foreground">
-                            {showBalances ? wallet.balance : '••••••'} {wallet.coin_ticker}
-                          </p>
-                        </div>
+                {wallets.map((wallet) => (
+                  <div
+                    key={wallet.id || wallet.coin_ticker}
+                    className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+                  >
+                    <div className="flex items-center space-x-4">
+                      <div className="flex items-center justify-center flex-shrink-0 w-8 h-8">
+                        {wallet.coin_logo ? (
+                          <img
+                            src={wallet.coin_logo}
+                            alt={wallet.coin_ticker}
+                            className="h-full w-full object-contain"
+                            onError={(e) => {
+                              // Fallback if image fails to load
+                              (e.target as HTMLImageElement).src = '';
+                              (e.target as HTMLImageElement).className = 'hidden';
+                            }}
+                          />
+                        ) : (
+                          <DollarSign className="h-6 w-6 text-primary" />
+                        )}
                       </div>
-
-                      <div className="text-right">
-                        {/* USD Value placeholder */}
-                      </div>
-
-                      <div className="flex space-x-2">
-                        <Button variant="outline" size="sm">
-                          <Send className="h-4 w-4 mr-1" />
-                          Send
-                        </Button>
-                        <Button variant="outline" size="sm">
-                          <ArrowDownLeft className="h-4 w-4 mr-1" />
-                          Receive
-                        </Button>
+                      <div>
+                        <div className="flex items-center space-x-2">
+                          <h3 className="font-medium">{wallet.coin_name}</h3>
+                          <Badge variant="secondary">{wallet.coin_ticker}</Badge>
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                          {showBalances ? wallet.balance : '••••••'} {wallet.coin_ticker}
+                        </p>
                       </div>
                     </div>
-                  ))
-                )}
+
+                    <div className="text-right">
+                      {/* USD Value placeholder */}
+                    </div>
+
+                    <div className="flex space-x-2">
+                      <Button variant="outline" size="sm">
+                        <Send className="h-4 w-4 mr-1" />
+                        Send
+                      </Button>
+                      <Button variant="outline" size="sm">
+                        <ArrowDownLeft className="h-4 w-4 mr-1" />
+                        Receive
+                      </Button>
+                    </div>
+                  </div>
+                ))}
               </CardContent>
             </Card>
           </div>
