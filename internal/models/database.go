@@ -217,3 +217,30 @@ type CoinListResponse struct {
 type CoinResponse struct {
 	Coin Coin `json:"coin"`
 }
+
+// Wallet represents a user's balance for a specific coin
+type Wallet struct {
+	ID            uuid.UUID `json:"id" db:"id"`
+	UserID        uuid.UUID `json:"user_id" db:"user_id"`
+	CoinID        int       `json:"coin_id" db:"coin_id"`
+	Balance       string    `json:"balance" db:"balance"`        // Using string for precise decimal handling
+	FrozenBalance string    `json:"frozen_balance" db:"frozen_balance"` // Using string for precise decimal handling
+	CreatedAt     time.Time `json:"created_at" db:"created_at"`
+	UpdatedAt     time.Time `json:"updated_at" db:"updated_at"`
+}
+
+// Transaction represents a financial transaction record
+type Transaction struct {
+	ID            uuid.UUID `json:"id" db:"id"`
+	UserID        uuid.UUID `json:"user_id" db:"user_id"`
+	WalletID      uuid.UUID `json:"wallet_id" db:"wallet_id"`
+	Type          string    `json:"type" db:"type"` // deposit, withdraw, transfer
+	Amount        string    `json:"amount" db:"amount"` // Using string for precise decimal handling
+	Fee           string    `json:"fee" db:"fee"`       // Using string for precise decimal handling
+	Description   *string   `json:"description,omitempty" db:"description"`
+	ReferenceID   *string   `json:"reference_id,omitempty" db:"reference_id"`
+	PaymentMethod *int      `json:"payment_method,omitempty" db:"payment_method"` // e.g. 1=coinpayments, etc.
+	Status        string    `json:"status" db:"status"`
+	CreatedAt     time.Time `json:"created_at" db:"created_at"`
+	UpdatedAt     time.Time `json:"updated_at" db:"updated_at"`
+}

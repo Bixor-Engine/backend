@@ -17,6 +17,8 @@ func SetupRoutes(db *sql.DB) *gin.Engine {
 	healthHandler := handlers.NewHealthHandler(db)
 	authHandler := handlers.NewAuthHandler(db)
 	currencyHandler := handlers.NewCurrencyHandler(db)
+	walletHandler := handlers.NewWalletHandler(db)
+	transactionHandler := handlers.NewTransactionHandler(db)
 
 	// CORS middleware
 	router.Use(func(c *gin.Context) {
@@ -144,10 +146,13 @@ func SetupRoutes(db *sql.DB) *gin.Engine {
 				// auth.POST("/forgot-password", authHandler.ForgotPassword)
 			}
 
-			// Future protected routes (frontend access)
-			// protected.GET("/users", userHandler.GetUsers)
-			// protected.POST("/orders", orderHandler.CreateOrder)
-			// protected.GET("/markets", marketHandler.GetMarkets)
+			// Authenticated User Routes (require both Secret + JWT)
+			userRoutes := protected.Group("")
+			userRoutes.Use(middleware.UserTokenMiddleware())
+			{
+				userRoutes.GET("/wallets", walletHandler.GetWallets)
+				userRoutes.GET("/transactions", transactionHandler.GetTransactions)
+			}
 		}
 
 		// ============================================

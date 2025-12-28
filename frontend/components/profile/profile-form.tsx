@@ -39,7 +39,7 @@ export function ProfileForm() {
                         country: currentUser.country || '',
                     });
                 }
-            } catch (error) {
+            } catch {
                 setMessage({ type: 'error', text: 'Failed to load user data' });
             } finally {
                 setLoading(false);
@@ -65,8 +65,8 @@ export function ProfileForm() {
             // Reload user data to reflect changes
             const updatedUser = await AuthService.getCurrentUser();
             if (updatedUser) setUser(updatedUser);
-        } catch (error: any) {
-            setMessage({ type: 'error', text: error.message || 'Failed to update profile' });
+        } catch (error: unknown) {
+            setMessage({ type: 'error', text: (error as Error).message || 'Failed to update profile' });
         } finally {
             setSaving(false);
         }

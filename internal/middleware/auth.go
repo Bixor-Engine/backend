@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/Bixor-Engine/backend/internal/models"
 	"github.com/gin-gonic/gin"
 )
 
@@ -57,12 +58,37 @@ func PublicMiddleware() gin.HandlerFunc {
 	}
 }
 
-// UserTokenMiddleware will be used in the future for personal API tokens
-// For now, it's a placeholder that can be extended later
+// UserTokenMiddleware validates the JWT access token for personal API routes
 func UserTokenMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		// TODO: Implement user token validation when personal API is implemented
-		// For now, this is a placeholder
+		authHeader := c.GetHeader("Authorization")
+		if authHeader == "" {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "missing_token", "message": "Authorization header is required"})
+			c.Abort()
+			return
+		}
+
+		// Check if it starts with "Bearer "
+		if len(authHeader) < 7 || authHeader[:7] != "Bearer " {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid_token_format", "message": "Authorization header must be Bearer token"})
+			c.Abort()
+			return
+		}
+
+		tokenString := authHeader[7:]
+		claims, err := models.ValidateAccessToken(tokenString)
+		if err != nil {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid_token", "message": "Invalid or expired token"})
+			c.Abort()
+			return
+		}
+
+		// Set user ID and other claims in context
+		c.Set("userID", claims.UserID.String())
+		c.Set("username", claims.Username)
+		c.Set("email", claims.Email)
+		c.Set("role", claims.Role)
+
 		c.Next()
 	}
 }

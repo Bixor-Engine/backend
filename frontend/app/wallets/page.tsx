@@ -2,29 +2,26 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/use-auth';
+import { useWallet } from '@/hooks/use-wallet';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ProtectedNavbar } from '@/components/protected-navbar';
-import { 
-  Plus, 
-  Send, 
-  ArrowDownLeft, 
-  ArrowUpRight, 
-  Eye, 
+import {
+  Plus,
+  Send,
+  ArrowDownLeft,
+  ArrowUpRight,
+  Eye,
   EyeOff,
-  TrendingUp,
-  TrendingDown,
   DollarSign,
-  Bitcoin,
-  Copy,
-  QrCode,
-  History
+  History,
+  QrCode
 } from 'lucide-react';
-import { toast } from "sonner";
 
 export default function Wallets() {
-  const { user, loading, requireAuth, requireEmailVerification } = useAuth();
+  const { user, loading: authLoading, requireAuth, requireEmailVerification } = useAuth();
+  const { wallets, transactions, loading: walletLoading } = useWallet();
   const [showBalances, setShowBalances] = useState(true);
 
   useEffect(() => {
@@ -32,7 +29,7 @@ export default function Wallets() {
     requireEmailVerification();
   }, [requireAuth, requireEmailVerification]);
 
-  if (loading) {
+  if (authLoading || walletLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
@@ -47,109 +44,31 @@ export default function Wallets() {
     return null;
   }
 
-  // Mock wallet data
-  const wallets = [
-    {
-      id: 1,
-      name: 'Bitcoin',
-      symbol: 'BTC',
-      balance: '0.12458902',
-      usdValue: '$5,847.23',
-      change24h: '+5.67%',
-      changeType: 'positive' as const,
-      icon: Bitcoin,
-      color: 'text-orange-500',
-    },
-    {
-      id: 2,
-      name: 'Ethereum',
-      symbol: 'ETH',
-      balance: '2.45891234',
-      usdValue: '$4,234.56',
-      change24h: '+3.21%',
-      changeType: 'positive' as const,
-      icon: DollarSign,
-      color: 'text-blue-500',
-    },
-    {
-      id: 3,
-      name: 'Cardano',
-      symbol: 'ADA',
-      balance: '1,250.00',
-      usdValue: '$567.89',
-      change24h: '-2.14%',
-      changeType: 'negative' as const,
-      icon: DollarSign,
-      color: 'text-purple-500',
-    },
-  ];
-
-  const recentTransactions = [
-    { 
-      id: 1, 
-      type: 'receive', 
-      asset: 'BTC', 
-      amount: '0.00521', 
-      usdValue: '$245.67', 
-      from: '1A1zP1...eP2SH', 
-      time: '2 min ago',
-      status: 'completed'
-    },
-    { 
-      id: 2, 
-      type: 'send', 
-      asset: 'ETH', 
-      amount: '0.5', 
-      usdValue: '$860.23', 
-      to: '0x742d...35Cc', 
-      time: '1 hour ago',
-      status: 'completed'
-    },
-    { 
-      id: 3, 
-      type: 'receive', 
-      asset: 'ADA', 
-      amount: '100', 
-      usdValue: '$45.50', 
-      from: 'addr1q...xyz', 
-      time: '3 hours ago',
-      status: 'pending'
-    },
-  ];
-
-  const totalPortfolioValue = '$10,649.68';
-  const portfolioChange = '+4.23%';
-
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-    toast.success('Copied to clipboard!');
-  };
-
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
       <ProtectedNavbar user={user} currentPage="wallets" />
 
       {/* Main Content */}
-      <main className="container mx-auto p-6 space-y-6">{/* Portfolio Summary */}
+      <main className="container mx-auto p-6 space-y-6">
+        {/* Portfolio Summary */}
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-3xl font-bold">Your Wallets</h2>
             <p className="text-muted-foreground">Manage your cryptocurrency holdings</p>
           </div>
-          <Button className="bg-gradient-to-r from-primary to-primary/90">
-            <Plus className="mr-2 h-4 w-4" />
-            Add Wallet
-          </Button>
+          <div className="flex space-x-2">
+            {/* Action buttons could go here if needed in future */}
+          </div>
         </div>
 
-        {/* Total Portfolio Value */}
+        {/* Total Portfolio Value - Placeholder for now */}
         <Card className="bg-gradient-to-r from-primary/5 to-primary/10 border-primary/20">
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
                 <CardTitle className="text-lg">Total Portfolio Value</CardTitle>
-                <CardDescription>All your assets combined</CardDescription>
+                <CardDescription>All your assets combined (Estimated)</CardDescription>
               </div>
               <Button
                 variant="ghost"
@@ -163,12 +82,7 @@ export default function Wallets() {
           <CardContent>
             <div className="flex items-center space-x-4">
               <div className="text-3xl font-bold">
-                {showBalances ? totalPortfolioValue : '••••••'}
-              </div>
-              <div className="flex items-center space-x-1">
-                <TrendingUp className="h-4 w-4 text-green-500" />
-                <span className="text-green-500 font-medium">{portfolioChange}</span>
-                <span className="text-muted-foreground text-sm">24h</span>
+                {showBalances ? '$0.00' : '••••••'} <span className="text-sm text-muted-foreground font-normal">(Prices unavailable)</span>
               </div>
             </div>
           </CardContent>
@@ -184,56 +98,61 @@ export default function Wallets() {
                 <CardDescription>Manage your cryptocurrency balances</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                {wallets.map((wallet) => (
-                  <div
-                    key={wallet.id}
-                    className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
-                  >
-                    <div className="flex items-center space-x-4">
-                      <div className={`p-2 rounded-full bg-muted ${wallet.color}`}>
-                        <wallet.icon className="h-5 w-5" />
-                      </div>
-                      <div>
-                        <div className="flex items-center space-x-2">
-                          <h3 className="font-medium">{wallet.name}</h3>
-                          <Badge variant="secondary">{wallet.symbol}</Badge>
-                        </div>
-                        <p className="text-sm text-muted-foreground">
-                          {showBalances ? wallet.balance : '••••••'} {wallet.symbol}
-                        </p>
-                      </div>
-                    </div>
-                    
-                    <div className="text-right">
-                      <p className="font-medium">
-                        {showBalances ? wallet.usdValue : '••••••'}
-                      </p>
-                      <div className="flex items-center space-x-1">
-                        {wallet.changeType === 'positive' ? (
-                          <TrendingUp className="h-3 w-3 text-green-500" />
-                        ) : (
-                          <TrendingDown className="h-3 w-3 text-red-500" />
-                        )}
-                        <span className={`text-xs ${
-                          wallet.changeType === 'positive' ? 'text-green-500' : 'text-red-500'
-                        }`}>
-                          {wallet.change24h}
-                        </span>
-                      </div>
-                    </div>
-                    
-                    <div className="flex space-x-2">
-                      <Button variant="outline" size="sm">
-                        <Send className="h-4 w-4 mr-1" />
-                        Send
-                      </Button>
-                      <Button variant="outline" size="sm">
-                        <ArrowDownLeft className="h-4 w-4 mr-1" />
-                        Receive
-                      </Button>
-                    </div>
+                {wallets.length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    No wallets found. Create one to get started.
                   </div>
-                ))}
+                ) : (
+                  wallets.map((wallet) => (
+                    <div
+                      key={wallet.id || wallet.coin_ticker}
+                      className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+                    >
+                      <div className="flex items-center space-x-4">
+                        <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center overflow-hidden flex-shrink-0">
+                          {wallet.coin_logo ? (
+                            <img
+                              src={wallet.coin_logo}
+                              alt={wallet.coin_ticker}
+                              className="h-6 w-6 object-contain"
+                              onError={(e) => {
+                                // Fallback if image fails to load
+                                (e.target as HTMLImageElement).src = '';
+                                (e.target as HTMLImageElement).className = 'hidden';
+                              }}
+                            />
+                          ) : (
+                            <DollarSign className="h-5 w-5 text-primary" />
+                          )}
+                        </div>
+                        <div>
+                          <div className="flex items-center space-x-2">
+                            <h3 className="font-medium">{wallet.coin_name}</h3>
+                            <Badge variant="secondary">{wallet.coin_ticker}</Badge>
+                          </div>
+                          <p className="text-sm text-muted-foreground">
+                            {showBalances ? wallet.balance : '••••••'} {wallet.coin_ticker}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="text-right">
+                        {/* USD Value placeholder */}
+                      </div>
+
+                      <div className="flex space-x-2">
+                        <Button variant="outline" size="sm">
+                          <Send className="h-4 w-4 mr-1" />
+                          Send
+                        </Button>
+                        <Button variant="outline" size="sm">
+                          <ArrowDownLeft className="h-4 w-4 mr-1" />
+                          Receive
+                        </Button>
+                      </div>
+                    </div>
+                  ))
+                )}
               </CardContent>
             </Card>
           </div>
@@ -254,57 +173,47 @@ export default function Wallets() {
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
-                {recentTransactions.map((tx) => (
-                  <div
-                    key={tx.id}
-                    className="flex items-center space-x-3 p-3 border rounded-lg"
-                  >
-                    <div className={`p-2 rounded-full ${
-                      tx.type === 'receive' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'
-                    }`}>
-                      {tx.type === 'receive' ? (
-                        <ArrowDownLeft className="h-4 w-4" />
-                      ) : (
-                        <ArrowUpRight className="h-4 w-4" />
-                      )}
-                    </div>
-                    
-                    <div className="flex-1">
-                      <div className="flex items-center justify-between">
-                        <p className="text-sm font-medium capitalize">
-                          {tx.type} {tx.asset}
-                        </p>
-                        <div className="text-right">
-                          <p className="text-sm font-medium">
-                            {tx.type === 'receive' ? '+' : '-'}{tx.amount} {tx.asset}
-                          </p>
-                          <p className="text-xs text-muted-foreground">{tx.usdValue}</p>
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-center justify-between mt-1">
-                        <div className="flex items-center space-x-2">
-                          <p className="text-xs text-muted-foreground">
-                            {tx.type === 'receive' ? 'From:' : 'To:'} {tx.from || tx.to}
-                          </p>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-auto p-0"
-                            onClick={() => copyToClipboard(tx.from || tx.to || '')}
-                          >
-                            <Copy className="h-3 w-3" />
-                          </Button>
-                        </div>
-                        <Badge variant={tx.status === 'completed' ? 'default' : 'secondary'}>
-                          {tx.status}
-                        </Badge>
-                      </div>
-                      
-                      <p className="text-xs text-muted-foreground mt-1">{tx.time}</p>
-                    </div>
+                {transactions.length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    No transactions found.
                   </div>
-                ))}
+                ) : (
+                  transactions.map((tx) => (
+                    <div
+                      key={tx.id}
+                      className="flex items-center space-x-3 p-3 border rounded-lg"
+                    >
+                      <div className={`p-2 rounded-full ${tx.type === 'deposit' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'
+                        }`}>
+                        {tx.type === 'deposit' ? (
+                          <ArrowDownLeft className="h-4 w-4" />
+                        ) : (
+                          <ArrowUpRight className="h-4 w-4" />
+                        )}
+                      </div>
+
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between">
+                          <p className="text-sm font-medium capitalize">
+                            {tx.type} {tx.coin_ticker}
+                          </p>
+                          <div className="text-right">
+                            <p className="text-sm font-medium">
+                              {tx.type === 'deposit' ? '+' : '-'}{tx.amount} {tx.coin_ticker}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center justify-between mt-1">
+                          <Badge variant={tx.status === 'completed' ? 'default' : 'secondary'}>
+                            {tx.status}
+                          </Badge>
+                          <p className="text-xs text-muted-foreground">{new Date(tx.created_at).toLocaleDateString()}</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                )}
               </CardContent>
             </Card>
           </div>

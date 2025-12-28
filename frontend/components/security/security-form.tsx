@@ -1,14 +1,13 @@
 import * as React from 'react';
 import { useState, useEffect } from 'react';
-import { AuthService, User, ChangePasswordRequest, ToggleTwoFARequest } from '@/lib/auth';
+import { AuthService, User, ChangePasswordRequest } from '@/lib/auth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
-import { AlertCircle, CheckCircle2, Shield, Lock, Smartphone } from 'lucide-react';
+import { AlertCircle, CheckCircle2, Lock, Smartphone } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Separator } from '@/components/ui/separator';
 import { PasswordStrength } from '@/components/ui/password-strength';
 
 export function SecurityForm() {
@@ -20,8 +19,8 @@ export function SecurityForm() {
             try {
                 const currentUser = await AuthService.getCurrentUser();
                 setUser(currentUser);
-            } catch (error) {
-                console.error(error);
+            } catch {
+                console.error('Failed to load user');
             } finally {
                 setLoading(false);
             }
@@ -62,8 +61,8 @@ function ChangePasswordSection() {
             await AuthService.changePassword(formData);
             setMessage({ type: 'success', text: 'Password changed successfully' });
             setFormData({ current_password: '', new_password: '' });
-        } catch (error: any) {
-            setMessage({ type: 'error', text: error.message || 'Failed to change password' });
+        } catch (error: unknown) {
+            setMessage({ type: 'error', text: (error as Error).message || 'Failed to change password' });
         } finally {
             setSaving(false);
         }
@@ -161,8 +160,8 @@ function TwoFactorSection({ user }: { user: User | null }) {
             setConfirmingToggle(false);
             setOtpCode('');
             setMessage({ type: 'success', text: `Two-factor authentication ${targetState ? 'enabled' : 'disabled'} successfully.` });
-        } catch (error: any) {
-            setMessage({ type: 'error', text: error.message || 'Verification failed.' });
+        } catch (error: unknown) {
+            setMessage({ type: 'error', text: (error as Error).message || 'Verification failed.' });
         } finally {
             setVerifying(false);
         }

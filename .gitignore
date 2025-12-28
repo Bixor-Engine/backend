@@ -52,3 +52,5 @@ tmp/
 tools/test-api/test-api.exe
 tools/auth/auth.exe
 tmp/main.exe
+login_response.json
+temp_login.json

@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import { useState, useEffect } from 'react';
-import { AuthService, User, UpdateSettingsRequest } from '@/lib/auth';
+import { AuthService, UpdateSettingsRequest } from '@/lib/auth';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -30,7 +30,7 @@ export function SettingsForm() {
                         timezone: currentUser.timezone || 'UTC',
                     });
                 }
-            } catch (error) {
+            } catch {
                 setMessage({ type: 'error', text: 'Failed to load settings' });
             } finally {
                 setLoading(false);
@@ -52,8 +52,8 @@ export function SettingsForm() {
         try {
             await AuthService.updateSettings(formData);
             setMessage({ type: 'success', text: 'Settings updated successfully' });
-        } catch (error: any) {
-            setMessage({ type: 'error', text: error.message || 'Failed to update settings' });
+        } catch (error: unknown) {
+            setMessage({ type: 'error', text: (error as Error).message || 'Failed to update settings' });
         } finally {
             setSaving(false);
         }

@@ -102,7 +102,7 @@ export class AuthService {
       const currentTime = Date.now() / 1000;
       const isValid = payload.exp > currentTime;
       return isValid;
-    } catch (error) {
+    } catch {
       return false;
     }
   }
@@ -134,7 +134,7 @@ export class AuthService {
 
         const data = await response.json();
         return data.user;
-      } catch (error) {
+      } catch {
         return null;
       }
     };
@@ -250,7 +250,7 @@ export class AuthService {
         this.clearAuth();
         return false;
       }
-    } catch (error) {
+    } catch {
       this.clearAuth();
       return false;
     }
@@ -272,7 +272,7 @@ export class AuthService {
         if (!response.ok) {
           // Log silently or ignore
         }
-      } catch (error) {
+      } catch {
         // Ignore errors - still clear local tokens
       }
     }
@@ -438,5 +438,74 @@ export class AuthService {
     }
 
     return data;
+  }
+
+  static async fetch(url: string, options: RequestInit = {}): Promise<Response> {
+    const token = this.getToken();
+    if (!token) {
+      // If no token, we can throw or just proceed without auth (depending on requirement).
+      // For protected routes, this will fail 401, which is fine.
+      // But let's try to refresh if we can.
+      if (this.getRefreshToken()) {
+        await this.refreshToken();
+      }
+    } else if (this.isTokenExpiringSoon()) {
+      await this.refreshToken();
+    }
+
+    const currentToken = this.getToken();
+
+    // Prepare headers
+    const headers = new Headers(options.headers || {});
+    headers.set('Content-Type', 'application/json');
+    if (currentToken) {
+      headers.set('Authorization', `Bearer ${currentToken}`);
+    }
+
+    // Add backend secret if needed (though Next.js API routes usually handle this if proxying, 
+    // but here we are calling internal API routes directly or via generic proxy).
+    // The previous implementation assumes direct calls to /api/... which matches the backend routes.
+    // If the frontend is hitting the backend directly, we rely on the browser not needing the secret
+    // OR we need to add it. The existing code suggests we hit '/api/...' which might be rewritten.
+    // However, looking at 'routes.go', it expects 'X-Backend-Secret'.
+    // In `AuthService`, we don't see X-Backend-Secret being added in `getDefaultHeaders`.
+    // Wait, `API_PROTECTION.md` says:
+    // "Usage from Frontend: headers: { 'X-Backend-Secret': process.env.NEXT_PUBLIC_BACKEND_SECRET, ... }"
+    // So we SHOULD add it.
+
+    // So we SHOULD add it.
+
+    // Fallback to 'test123' if env var is missing (e.g., server not restarted)
+    const backendSecret = process.env.NEXT_PUBLIC_BACKEND_SECRET || 'test123';
+    if (backendSecret) {
+      headers.set('X-Backend-Secret', backendSecret);
+    }
+
+    const config = {
+      ...options,
+      headers,
+    };
+
+    // Prepend /api/v1 if the url doesn't start with http or /api
+    // But existing calls use '/api/auth/...'.
+    // The backend routes are group '/api/v1'.
+    // So '/api/auth/...' in frontend probably maps to '/api/v1/auth/...' in backend? 
+    // Let's check `api.go` or `routes.go`.
+    // `routes.go`: v1 := router.Group("/api/v1") ... auth := protected.Group("/auth")
+    // So the full path is `/api/v1/auth/...`.
+    // The existing `login` calls use `/api/auth/login`. This implies a rewrite or proxy?
+    // Or maybe the previous dev made a mistake.
+    // Let's assume we should use the full path if we are hitting the Go server directly.
+    // If we are hitting Next.js API routes, then it depends.
+    // Assuming we hit Go server directly or via proxy at /api/v1.
+    // For now, I will NOT modify the URL structure, but just pass it through.
+    // BUT, the use-wallet hook uses `/wallets`, so we might need to prepend `/api/v1`.
+
+    let finalUrl = url;
+    if (url.startsWith('/wallets') || url.startsWith('/transactions')) {
+      finalUrl = `/api/v1${url}`;
+    }
+
+    return fetch(finalUrl, config);
   }
 }

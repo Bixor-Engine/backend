@@ -11,16 +11,22 @@ export function useAuth() {
   useEffect(() => {
     const checkAuthAndFetchUser = async () => {
       try {
-        if (!AuthService.isAuthenticated()) {
+        let isAuth = AuthService.isAuthenticated();
+
+        if (!isAuth && AuthService.getRefreshToken()) {
+          isAuth = await AuthService.refreshToken();
+        }
+
+        if (!isAuth) {
           setIsAuthenticated(false);
           setUser(null);
           setLoading(false);
           return;
         }
-        
+
         // Try to get current user (this will auto-refresh if needed)
         const userData = await AuthService.getCurrentUser();
-        
+
         if (!userData) {
           // Complete auth failure - clear everything
           AuthService.clearAuth();
@@ -80,7 +86,13 @@ export function useAuth() {
     refetch: async () => {
       setLoading(true);
       try {
-        if (!AuthService.isAuthenticated()) {
+        let isAuth = AuthService.isAuthenticated();
+
+        if (!isAuth && AuthService.getRefreshToken()) {
+          isAuth = await AuthService.refreshToken();
+        }
+
+        if (!isAuth) {
           setIsAuthenticated(false);
           setUser(null);
           setLoading(false);
@@ -89,7 +101,7 @@ export function useAuth() {
 
         // Try to get current user (this will auto-refresh if needed)
         const userData = await AuthService.getCurrentUser();
-        
+
         if (!userData) {
           AuthService.clearAuth();
           setIsAuthenticated(false);
